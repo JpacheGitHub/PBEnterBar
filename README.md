@@ -24,10 +24,19 @@
 ```
 
 ##Delegate
-需要遵从的代理：
 
 1. PBEnterBarDelegate
 2. PBMoreViewDelegate
 3. PBRecordViewDelegate
 
-具体的代理方法在对应的.h中有对应的解释
+具体的代理方法在对应的.h中有对应的解释。
+
+- PBEnterbarTypeChat
+- PBEnterbarTypeGroup
+
+这两种类型需要签以下两个代理
+
+- PBMoreViewDelegate
+- PBRecordViewDelegate
+
+若为 ```bash PBEnterbarTypeComment ``` 类型，则不需要签后两个代理。
