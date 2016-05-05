@@ -19,7 +19,6 @@
 @property (nonatomic, strong) NSMutableArray *leftItems;
 @property (nonatomic, strong) NSMutableArray *rightItems;
 
-@property (nonatomic, strong) UIView *enterBarView;
 /**
  *  转变输入样式
  */
@@ -42,7 +41,6 @@
 @property (nonatomic, assign) CGFloat previousTextViewContentHeight;//上一次inputTextView的contentSize.height
 @property (nonatomic, strong) NSLayoutConstraint *inputViewWidthItemsLeftConstraint;
 @property (nonatomic, strong) NSLayoutConstraint *inputViewWidthoutItemsLeftConstraint;
-
 @end
 
 
@@ -59,7 +57,7 @@
 #pragma mark - init
 
 - (instancetype)initWithFrame:(CGRect)frame {
-    self = [self initWithFrame:frame horizontalPadding:8 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:150 type:PBEnterbarTypeGroup];
+    self = [self initWithFrame:frame horizontalPadding:5 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:90 type:PBEnterbarTypeGroup];
     if (self) {
         
     }
@@ -70,7 +68,7 @@
 - (instancetype)initWithFrame:(CGRect)frame
                          type:(PBEnterBarType)type {
     
-    self = [self initWithFrame:frame horizontalPadding:8 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:150 type:type];
+    self = [self initWithFrame:frame horizontalPadding:5 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:90 type:type];
     if (self) {
         
     }
@@ -102,9 +100,17 @@
         self.activityButtomView = nil;
         _showButtomView = NO;
         
-//        self.defaultEmoji = [EaseEmoji allEmoji];
-        
+//        self.backgroundColor = [UIColor whiteColor];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(enterKeyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
+        
+        _recordImageName = @"ToolViewInputVoice";
+        _recordHLImageName = @"ToolViewInputVoiceHL";
+        _faceImageName = @"ToolViewEmotion";
+        _faceHLImageName = @"ToolViewEmotionHL";
+        _moreImageName = @"TypeSelectorBtn_Black";
+        _moreHLImageName = @"TypeSelectorBtnHL_Black";
+        _defaultImageName = @"ToolViewKeyboard";
+        _defaultHLImageName = @"ToolViewKeyboardHL";
         
         [self createSubView];
     }
@@ -122,17 +128,17 @@
     //inputTextView
     self.inputTextView = [[PBEnterBarTextView alloc] initWithFrame:CGRectMake(_horizontalPadding,
                                                                            _verticalPadding,
-                                                                           self.frame.size.width - _verticalPadding * 2,
+                                                                           self.frame.size.width - _horizontalPadding * 2,
                                                                            self.frame.size.height - _verticalPadding * 2)];
-    _inputTextView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
-    _inputTextView.scrollEnabled = YES;
-    _inputTextView.returnKeyType = UIReturnKeySend;
-    _inputTextView.enablesReturnKeyAutomatically = YES;
+    
     _inputTextView.delegate = self;
     _inputTextView.layer.borderColor = [UIColor colorWithWhite:0.8f alpha:1.0f].CGColor;
+    _inputTextView.layer.masksToBounds = YES;
     _inputTextView.layer.borderWidth = 0.65f;
     _inputTextView.layer.cornerRadius = 6.0f;
+    
     _previousTextViewContentHeight = [self getTextViewContentH:_inputTextView];
+    [self willShowInputTextViewToHeight:_previousTextViewContentHeight];
     [_enterBarView addSubview:_inputTextView];
     
     switch (_enterBarType) {
@@ -141,6 +147,7 @@
             PBEnterBarItem *faceItem = [self createFaceFunction];
             PBEnterBarItem *moreItem = [self createMoreFunction];
             [self setInputViewRightItems:@[faceItem, moreItem]];
+            [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[styleChangeButton]-padding-[inputTextView]-padding-[faceItem]-padding-[moreItem]-padding-|" options:0 metrics:@{@"padding":@(_horizontalPadding)} views:@{@"styleChangeButton":_styleChangeButton, @"inputTextView":_inputTextView, @"faceItem":faceItem.button, @"moreItem":moreItem.button}]];
         }
             break;
         case PBEnterbarTypeGroup: {
@@ -148,28 +155,29 @@
             PBEnterBarItem *faceItem = [self createFaceFunction];
             PBEnterBarItem *moreItem = [self createMoreFunction];
             [self setInputViewRightItems:@[faceItem, moreItem]];
+            [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[styleChangeButton]-padding-[inputTextView]-padding-[faceItem]-padding-[moreItem]-padding-|" options:0 metrics:@{@"padding":@(_horizontalPadding)} views:@{@"styleChangeButton":_styleChangeButton, @"inputTextView":_inputTextView, @"faceItem":faceItem.button, @"moreItem":moreItem.button}]];
         }
             break;
         case PBEnterbarTypeComment: {
             PBEnterBarItem *faceItem = [self createFaceFunction];
             [self setInputViewRightItems:@[faceItem]];
+            [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[inputTextView]-padding-[faceItem]-padding-|" options:0 metrics:@{@"padding":@(_horizontalPadding)} views:@{@"inputTextView":_inputTextView, @"faceItem":faceItem.button}]];
         }
             break;
         default:
             break;
     }
-    
 }
 
 - (void)createRecordFunction {
     //转变输入样式按钮
-    UIButton *styleChangeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    styleChangeButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
-    [styleChangeButton setImage:[UIImage imageNamed:@"ToolViewInputVoice@3x"] forState:UIControlStateNormal];
-    [styleChangeButton setImage:[UIImage imageNamed:@"ToolViewInputVoiceHL@3x"] forState:UIControlStateHighlighted];
-    [styleChangeButton addTarget:self action:@selector(styleButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    _styleChangeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _styleChangeButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+    [_styleChangeButton setImage:[UIImage imageNamed:_recordImageName] forState:UIControlStateNormal];
+    [_styleChangeButton setImage:[UIImage imageNamed:_recordHLImageName] forState:UIControlStateHighlighted];
+    [_styleChangeButton addTarget:self action:@selector(styleButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     
-    PBEnterBarItem *styleItem = [[PBEnterBarItem alloc] initWithButton:styleChangeButton
+    PBEnterBarItem *styleItem = [[PBEnterBarItem alloc] initWithButton:_styleChangeButton
                                                               withView:nil];
     [self setInputViewLeftItems:@[styleItem]];
     
@@ -178,24 +186,24 @@
     _recordButton.frame = _inputTextView.frame;
     _recordButton.titleLabel.font = [UIFont systemFontOfSize:15.0];
     [_recordButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-    [_recordButton setBackgroundImage:[[UIImage imageNamed:@"record_btn_back@3x"]
+    [_recordButton setBackgroundImage:[[UIImage imageNamed:@"record_btn_back"]
                                        stretchableImageWithLeftCapWidth:10
                                        topCapHeight:10]
                              forState:UIControlStateNormal];
     
-    [_recordButton setBackgroundImage:[[UIImage imageNamed:@"record_btn_back_selected@3x"]
+    [_recordButton setBackgroundImage:[[UIImage imageNamed:@"record_btn_back_selected"]
                                        stretchableImageWithLeftCapWidth:10
                                        topCapHeight:10]
                              forState:UIControlStateHighlighted];
     
-    [_recordButton setTitle:@"按住  录音" forState:UIControlStateNormal];
-    [_recordButton setTitle:@"松开  结束" forState:UIControlStateHighlighted];
+    [_recordButton setTitle:NSLocalizedString(@"按住  录音", nil) forState:UIControlStateNormal];
+    [_recordButton setTitle:NSLocalizedString(@"松开  结束", nil) forState:UIControlStateHighlighted];
     _recordButton.hidden = YES;
-    [_recordButton addTarget:self action:@selector(recordButtonTouchDown) forControlEvents:UIControlEventTouchDown];
-    [_recordButton addTarget:self action:@selector(recordButtonTouchUpOutside) forControlEvents:UIControlEventTouchUpOutside];
-    [_recordButton addTarget:self action:@selector(recordButtonTouchUpInside) forControlEvents:UIControlEventTouchUpInside];
-    [_recordButton addTarget:self action:@selector(recordDragOutside) forControlEvents:UIControlEventTouchDragExit];
-    [_recordButton addTarget:self action:@selector(recordDragInside) forControlEvents:UIControlEventTouchDragEnter];
+    [_recordButton addTarget:self action:@selector(recordButtonTouchDown:) forControlEvents:UIControlEventTouchDown];
+    [_recordButton addTarget:self action:@selector(recordButtonTouchUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
+    [_recordButton addTarget:self action:@selector(recordButtonTouchUpInside:) forControlEvents:UIControlEventTouchUpInside];
+    [_recordButton addTarget:self action:@selector(recordDragOutside:) forControlEvents:UIControlEventTouchDragExit];
+    [_recordButton addTarget:self action:@selector(recordDragInside:) forControlEvents:UIControlEventTouchDragEnter];
     [_enterBarView addSubview:_recordButton];
 }
 
@@ -203,8 +211,8 @@
     //表情
     self.faceButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _faceButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotion@3x"] forState:UIControlStateNormal];
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotionHL@3x"] forState:UIControlStateHighlighted];
+    [_faceButton setImage:[UIImage imageNamed:_faceImageName] forState:UIControlStateNormal];
+    [_faceButton setImage:[UIImage imageNamed:_faceHLImageName] forState:UIControlStateHighlighted];
     [_faceButton addTarget:self action:@selector(faceButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     PBEnterBarItem *faceItem = [[PBEnterBarItem alloc] initWithButton:self.faceButton
                                                              withView:self.faceView];
@@ -215,9 +223,9 @@
     //更多
     self.moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _moreButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtn_Black@3x"]
+    [_moreButton setImage:[UIImage imageNamed:_moreImageName]
                  forState:UIControlStateNormal];
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtnHL_Black@3x"] forState:UIControlStateHighlighted];
+    [_moreButton setImage:[UIImage imageNamed:_moreHLImageName] forState:UIControlStateHighlighted];
     [_moreButton addTarget:self action:@selector(moreButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     PBEnterBarItem *moreItem = [[PBEnterBarItem alloc] initWithButton:self.moreButton
                                                              withView:self.moreView];
@@ -377,6 +385,44 @@
     _recordButton.frame = recordFrame;
 }
 
+- (void)setFaceImageName:(NSString *)faceImageName {
+    _faceImageName = faceImageName;
+    [_faceButton setImage:[UIImage imageNamed:faceImageName] forState:UIControlStateNormal];
+}
+
+- (void)setFaceHLImageName:(NSString *)faceHLImageName {
+    _faceHLImageName = faceHLImageName;
+    [_faceButton setImage:[UIImage imageNamed:faceHLImageName] forState:UIControlStateHighlighted];
+}
+
+- (void)setRecordImageName:(NSString *)recordImageName {
+    _recordImageName = recordImageName;
+    [_styleChangeButton setImage:[UIImage imageNamed:recordImageName] forState:UIControlStateNormal];
+}
+
+- (void)setRecordHLImageName:(NSString *)recordHLImageName {
+    _recordHLImageName = recordHLImageName;
+    [_styleChangeButton setImage:[UIImage imageNamed:recordHLImageName] forState:UIControlStateNormal];
+}
+
+- (void)setDefaultImageName:(NSString *)defaultImageName {
+    _defaultImageName = defaultImageName;
+}
+
+- (void)setDefaultHLImageName:(NSString *)defaultHLImageName {
+    _defaultHLImageName = defaultHLImageName;
+}
+
+- (void)setMoreImageName:(NSString *)moreImageName {
+    _moreImageName = moreImageName;
+    [_moreButton setImage:[UIImage imageNamed:moreImageName] forState:UIControlStateNormal];
+}
+
+- (void)setMoreHLImageName:(NSString *)moreHLImageName {
+    _moreHLImageName = moreHLImageName;
+    [_moreButton setImage:[UIImage imageNamed:moreHLImageName] forState:UIControlStateHighlighted];
+}
+
 #pragma mark - extend view action
 
 //录音, 键盘切换
@@ -384,19 +430,19 @@
     
     sender.selected = !sender.isSelected;
     if (sender.selected) {
-        [sender setImage:[UIImage imageNamed:@"ToolViewKeyboard@3x"] forState:UIControlStateNormal];
-        [sender setImage:[UIImage imageNamed:@"ToolViewKeyboardHL@3x"] forState:UIControlStateHighlighted];
+        [sender setImage:[UIImage imageNamed:_defaultImageName] forState:UIControlStateNormal];
+        [sender setImage:[UIImage imageNamed:_defaultHLImageName] forState:UIControlStateHighlighted];
         for (PBEnterBarItem *item in self.rightItems) {
             item.button.selected = NO;
         }
         
-        [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtn_Black@3x"]
+        [_moreButton setImage:[UIImage imageNamed:_moreImageName]
                      forState:UIControlStateNormal];
-        [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtnHL_Black@3x"] forState:UIControlStateHighlighted];
+        [_moreButton setImage:[UIImage imageNamed:_moreHLImageName] forState:UIControlStateHighlighted];
         
-        [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotion@3x"]
+        [_faceButton setImage:[UIImage imageNamed:_faceImageName]
                      forState:UIControlStateNormal];
-        [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotionHL@3x"] forState:UIControlStateHighlighted];
+        [_faceButton setImage:[UIImage imageNamed:_faceHLImageName] forState:UIControlStateHighlighted];
         
         for (PBEnterBarItem *item in self.leftItems) {
             if (item.button != sender) {
@@ -411,13 +457,13 @@
         [self willShowInputTextViewToHeight:_inputViewMinHeight];
         [_inputTextView resignFirstResponder];
     }else {
-        [sender setImage:[UIImage imageNamed:@"ToolViewInputVoice@3x"] forState:UIControlStateNormal];
-        [sender setImage:[UIImage imageNamed:@"ToolViewKeyboardHL@3x"] forState:UIControlStateHighlighted];
+        [sender setImage:[UIImage imageNamed:_recordImageName] forState:UIControlStateNormal];
+        [sender setImage:[UIImage imageNamed:_defaultHLImageName] forState:UIControlStateHighlighted];
         //键盘也算一种底部扩展页面
         [_inputTextView becomeFirstResponder];
     }
     
-    [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+    [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         _recordButton.hidden = !sender.isSelected;
         _inputTextView.hidden = sender.isSelected;
     } completion:nil];
@@ -437,35 +483,36 @@
         item.button.selected = NO;
     }
     
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtn_Black@3x"]
+    [_moreButton setImage:[UIImage imageNamed:_moreImageName]
                  forState:UIControlStateNormal];
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtnHL_Black@3x"]
+    [_moreButton setImage:[UIImage imageNamed:_moreHLImageName]
                  forState:UIControlStateHighlighted];
     
     for (PBEnterBarItem *item in _leftItems) {
         item.button.selected = NO;
-        [item.button setImage:[UIImage imageNamed:@"ToolViewInputVoice@3x"]
+        [item.button setImage:[UIImage imageNamed:_recordImageName]
                      forState:UIControlStateNormal];
-        [item.button setImage:[UIImage imageNamed:@"ToolViewKeyboardHL@3x"]
+        [item.button setImage:[UIImage imageNamed:_defaultHLImageName]
                      forState:UIControlStateHighlighted];
     }
     
     if (sender.selected) {
-        [_faceButton setImage:[UIImage imageNamed:@"ToolViewKeyboard@3x"] forState:UIControlStateNormal];
-        [_faceButton setImage:[UIImage imageNamed:@"ToolViewKeyboardHL@3x"] forState:UIControlStateHighlighted];
+        [_faceButton setImage:[UIImage imageNamed:_defaultImageName] forState:UIControlStateNormal];
+        [_faceButton setImage:[UIImage imageNamed:_defaultHLImageName] forState:UIControlStateHighlighted];
         //如果处于文字输入状态，使文字输入框失去焦点
         [_inputTextView resignFirstResponder];
         
         [self willShowBottomView:faceItem.button2View];
-        [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _recordButton.hidden = sender.selected;
             _inputTextView.hidden = !sender.selected;
         } completion:^(BOOL finished) {
             
         }];
     }else {
-        [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotion@3x"] forState:UIControlStateNormal];
-        [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotionHL@3x"] forState:UIControlStateHighlighted];
+        [_faceButton setImage:[UIImage imageNamed:_faceImageName] forState:UIControlStateNormal];
+        [_faceButton setImage:[UIImage imageNamed:_faceHLImageName] forState:UIControlStateHighlighted];
         [self.inputTextView becomeFirstResponder];
     }
 }
@@ -484,69 +531,81 @@
         item.button.selected = NO;
     }
     
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotion@3x"]
+    [_faceButton setImage:[UIImage imageNamed:_faceImageName]
                  forState:UIControlStateNormal];
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotionHL@3x"] forState:UIControlStateHighlighted];
+    [_faceButton setImage:[UIImage imageNamed:_faceHLImageName] forState:UIControlStateHighlighted];
     
     for (PBEnterBarItem *item in _leftItems) {
         item.button.selected = NO;
-        [item.button setImage:[UIImage imageNamed:@"ToolViewInputVoice@3x"]
+        [item.button setImage:[UIImage imageNamed:_recordImageName]
                      forState:UIControlStateNormal];
-        [item.button setImage:[UIImage imageNamed:@"ToolViewInputVoiceHL@3x"] forState:UIControlStateHighlighted];
+        [item.button setImage:[UIImage imageNamed:_defaultHLImageName] forState:UIControlStateHighlighted];
     }
     
     if (sender.selected) {
-        [_moreButton setImage:[UIImage imageNamed:@"ToolViewKeyboard@3x"]
+        [_moreButton setImage:[UIImage imageNamed:_defaultImageName]
                 forState:UIControlStateNormal];
-        [_moreButton setImage:[UIImage imageNamed:@"ToolViewKeyboardHL@3x"] forState:UIControlStateHighlighted];
+        [_moreButton setImage:[UIImage imageNamed:_defaultHLImageName] forState:UIControlStateHighlighted];
         //如果处于文字输入状态，使文字输入框失去焦点
         [_inputTextView resignFirstResponder];
         
         [self willShowBottomView:moreItem.button2View];
-        [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _recordButton.hidden = sender.selected;
             _inputTextView.hidden = !sender.selected;
         } completion:nil];
     }else {
-        [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtn_Black@3x"]
+        [_moreButton setImage:[UIImage imageNamed:_moreImageName]
                 forState:UIControlStateNormal];
-        [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtnHL_Black@3x"] forState:UIControlStateHighlighted];
+        [_moreButton setImage:[UIImage imageNamed:_moreHLImageName] forState:UIControlStateHighlighted];
         [self.inputTextView becomeFirstResponder];
     }
 }
 
 #pragma mark - record button action
 
-- (void)recordButtonTouchDown {
+- (void)recordButtonTouchDown:(UIButton *)sender {
+    [(PBRecordView *)self.recordView recordButtonTouchDown];
     if (_delegate && [_delegate respondsToSelector:@selector(didStartRecordingVoiceAction:)]) {
         [_delegate didStartRecordingVoiceAction:self.recordView];
     }
 }
 
-- (void)recordButtonTouchUpOutside {
+- (void)recordButtonTouchUpOutside:(UIButton *)sender {
+    
+    [(PBRecordView *)self.recordView recordButtonTouchUpOutside];
+    
     if (_delegate && [_delegate respondsToSelector:@selector(didCancelRecordingVoiceAction:)]) {
         
         [_delegate didCancelRecordingVoiceAction:_recordView];
     }
+    [(PBRecordView *)self.recordView removeFromSuperview];
 }
 
-- (void)recordButtonTouchUpInside {
-    _recordButton.enabled = NO;
+- (void)recordButtonTouchUpInside:(UIButton *)sender {
+    
+    [(PBRecordView *)self.recordView recordButtonTouchUpInside];
+    [(PBRecordView *)self.recordView removeFromSuperview];
+    
     if ([_delegate respondsToSelector:@selector(didFinishRecoingVoiceAction:)]) {
         
         [_delegate didFinishRecoingVoiceAction:_recordView];
     }
-    _recordButton.enabled = YES;
+    
 }
 
-- (void)recordDragOutside {
+- (void)recordDragOutside:(UIButton *)sender {
+    
+    [(PBRecordView *)self.recordView recordButtonDragOutside];
     if ([_delegate respondsToSelector:@selector(didDragOutsideAction:)]) {
         
         [_delegate didDragOutsideAction:_recordView];
     }
 }
 
-- (void)recordDragInside {
+- (void)recordDragInside:(UIButton *)sender {
+    
+    [(PBRecordView *)self.recordView recordButtonDragInside];
     if ([_delegate respondsToSelector:@selector(didDragInsideAction:)]) {
         
         [_delegate didDragInsideAction:_recordView];
@@ -562,20 +621,20 @@
     
     for (PBEnterBarItem *item in _leftItems) {
         item.button.selected = NO;
-        [item.button setImage:[UIImage imageNamed:@"ToolViewInputVoice@3x"]
+        [item.button setImage:[UIImage imageNamed:_recordImageName]
                      forState:UIControlStateNormal];
-        [item.button setImage:[UIImage imageNamed:@"ToolViewInputVoiceHL@3x"] forState:UIControlStateHighlighted];
+        [item.button setImage:[UIImage imageNamed:_recordHLImageName] forState:UIControlStateHighlighted];
     }
     
     for (PBEnterBarItem *item in _rightItems) {
         item.button.selected = NO;
     }
     
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotion@3x"] forState:UIControlStateNormal];
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotionHL@3x"] forState:UIControlStateHighlighted];
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtn_Black@3x"]
+    [_faceButton setImage:[UIImage imageNamed:_faceImageName] forState:UIControlStateNormal];
+    [_faceButton setImage:[UIImage imageNamed:_faceHLImageName] forState:UIControlStateHighlighted];
+    [_moreButton setImage:[UIImage imageNamed:_moreImageName]
                  forState:UIControlStateNormal];
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtnHL_Black@3x"] forState:UIControlStateHighlighted];
+    [_moreButton setImage:[UIImage imageNamed:_moreHLImageName] forState:UIControlStateHighlighted];
     
     return YES;
 }
@@ -598,10 +657,16 @@
         if ([_delegate respondsToSelector:@selector(didSendText:)]) {
             [_delegate didSendText:textView.text];
             _inputTextView.text = @"";
-            [self willShowInputTextViewToHeight:[self getTextViewContentH:_inputTextView]];;
+            [self willShowInputTextViewToHeight:[self getTextViewContentH:_inputTextView]];
         }
         return NO;
     }else {
+        if ([text hasPrefix:@"["] && [text hasSuffix:@"]"]) {
+            if ([[PBEmojiManager shareManager].emojiDic objectForKey:text]) {
+                [self selectedFacialView:text faceImage:[UIImage imageNamed:[[PBEmojiManager shareManager].emojiDic objectForKey:text]] isDelete:NO];
+                return NO;
+            }
+        }
         return YES;
     }
 }
@@ -630,7 +695,13 @@
         emojiTextAttachment.image = image;
         
         //解决表情比文字高一些
-        CGFloat height = _inputTextView.font.lineHeight;
+        CGFloat height = 0;
+        if ([_inputTextView.text isEqualToString:@""]) {
+            height = [UIFont systemFontOfSize:16].lineHeight;
+        }else {
+            height = _inputTextView.font.lineHeight;
+        }
+        
         emojiTextAttachment.bounds = CGRectMake(0, -5, height + 1, height + 1);
         
         [attr insertAttributedString:[NSAttributedString attributedStringWithAttachment:emojiTextAttachment] atIndex:location];
@@ -638,7 +709,7 @@
         // 设置整个属性字符串中的文本属性
         NSRange allRange = NSMakeRange(0, attr.length);
         // 让可变的属性文本的字体 和 textView 的保持一致，不做此操作添加表情后，在输入文字会变得比原来的字小一号。
-        [attr addAttribute:NSFontAttributeName value:[UIFont systemFontOfSize:17] range:allRange];
+        [attr addAttribute:NSFontAttributeName value:[UIFont systemFontOfSize:16] range:allRange];
         
         //如果不改变光标位置直接赋值，插入一个表情后光标会移动到最后
         _inputTextView.text = @"";
@@ -669,6 +740,14 @@
     }
     [attr deleteCharactersInRange:NSMakeRange(range.location - length, length)];
     return attr;
+}
+
+- (void)sendFaceButtonAction:(UIButton *)sender {
+    if (_delegate && [_delegate respondsToSelector:@selector(didSendText:)]) {
+        [_delegate didSendText:_inputTextView.text];
+        _inputTextView.text = @"";
+        [self willShowInputTextViewToHeight:[self getTextViewContentH:_inputTextView]];
+    }
 }
 
 #pragma mark - private input view
@@ -702,11 +781,21 @@
         CGRect rect = self.frame;
         rect.size.height += changeHeight;
         rect.origin.y -= changeHeight;
-        self.frame = rect;
         
-        rect = _enterBarView.frame;
-        rect.size.height += changeHeight;
-        _enterBarView.frame = rect;
+        CGRect rect2 = _enterBarView.frame;
+        rect2.size.height += changeHeight;
+        
+        __weak __typeof(&*self)weakSelf = self;
+        [UIView animateWithDuration:0.3
+                              delay:0
+                            options:UIViewAnimationOptionCurveEaseInOut
+                         animations:^{
+                             weakSelf.frame = rect;
+                             weakSelf.enterBarView.frame = rect2;
+                         }
+                         completion:^(BOOL finished) {
+                             
+                         }];
         
         if (_version < 7.0) {
             [_inputTextView setContentOffset:CGPointMake(0.0f, (_inputTextView.contentSize.height - _inputTextView.frame.size.height) / 2) animated:YES];
@@ -755,8 +844,7 @@
     CGRect toFrame = CGRectMake(fromFrame.origin.x, fromFrame.origin.y + (fromFrame.size.height - toHeight), fromFrame.size.width, toHeight);
     
     //如果需要将所有扩展页面都隐藏，而此时已经隐藏了所有扩展页面，则不进行任何操作
-    if(bottomHeight == 0 && self.frame.size.height == _enterBarView.frame.size.height)
-    {
+    if(bottomHeight == 0 && self.frame.size.height == _enterBarView.frame.size.height) {
         return;
     }
     //如果扩展页的高度为0, 则不显示扩展页
@@ -769,7 +857,8 @@
     }
     //更新tabBar的位置信息
     [UIView animateWithDuration:0.3
-                          delay:0 options:UIViewAnimationOptionCurveEaseInOut
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseInOut
                      animations:^{
                          self.frame = toFrame;
                      }
@@ -851,18 +940,18 @@
     for (PBEnterBarItem *item in _rightItems) {
         item.button.selected = NO;
         if (item.button != _faceButton && item.button != _moreButton) {
-            [item.button setImage:[UIImage imageNamed:@"ToolViewInputVoice@3x"]
+            [item.button setImage:[UIImage imageNamed:_recordImageName]
                          forState:UIControlStateNormal];
-            [item.button setImage:[UIImage imageNamed:@"ToolViewInputVoiceHL@3x"] forState:UIControlStateHighlighted];
+            [item.button setImage:[UIImage imageNamed:_recordHLImageName] forState:UIControlStateHighlighted];
         }
     }
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtn_Black@3x"]
+    [_moreButton setImage:[UIImage imageNamed:_moreImageName]
                  forState:UIControlStateNormal];
-    [_moreButton setImage:[UIImage imageNamed:@"TypeSelectorBtnHL_Black@3x"] forState:UIControlStateHighlighted];
+    [_moreButton setImage:[UIImage imageNamed:_moreHLImageName] forState:UIControlStateHighlighted];
     
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotion@3x"]
+    [_faceButton setImage:[UIImage imageNamed:_faceImageName]
                  forState:UIControlStateNormal];
-    [_faceButton setImage:[UIImage imageNamed:@"ToolViewEmotionHL@3x"] forState:UIControlStateHighlighted];
+    [_faceButton setImage:[UIImage imageNamed:_faceHLImageName] forState:UIControlStateHighlighted];
     
     [self willShowBottomView:nil];
     
@@ -876,7 +965,6 @@
         [_recordView removeFromSuperview];
     }
 }
-
 
 /*
 // Only override drawRect: if you perform custom drawing.

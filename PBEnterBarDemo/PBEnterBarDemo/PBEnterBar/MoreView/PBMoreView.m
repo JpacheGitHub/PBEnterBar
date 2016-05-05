@@ -7,15 +7,19 @@
 //
 
 #import "PBMoreView.h"
+#import "PBMoreViewButton.h"
 
 //button大小
-#define BUTTONSIZE (60 * (ONEWIDTH))
+#define BUTTONWIDTH (70 * (ONEWIDTH))
 //button.tag 初始值
-#define BUTTONTAG 10000
+#define BUTTONTAG 15000
 //列数
 #define MOREVIEW_COL 4
 //行数
 #define MOREVIEW_ROW 2
+
+#define MOREVIEWTOPPADDING (BUTTONWIDTH * 0.2)
+#define MOREVIEWBOTTOMPADDING (10 + (BUTTONWIDTH * 0.2))
 
 @interface PBMoreView ()<UIScrollViewDelegate>
 
@@ -32,23 +36,31 @@
 /**
  *  图片
  */
-@property (nonatomic, strong) UIButton *photoButton;
+@property (nonatomic, strong) PBMoreViewButton *photoButton;
 /**
  *  照相
  */
-@property (nonatomic, strong) UIButton *takePicButton;
+@property (nonatomic, strong) PBMoreViewButton *takePicButton;
+/**
+ *  打赏
+ */
+@property (nonatomic, strong) PBMoreViewButton *rewardButton;
 /**
  *  定位
  */
-@property (nonatomic, strong) UIButton *locationButton;
+@property (nonatomic, strong) PBMoreViewButton *locationButton;
 /**
  *  语音通话
  */
-@property (nonatomic, strong) UIButton *audioCallButton;
+@property (nonatomic, strong) PBMoreViewButton *audioCallButton;
 /**
  *  视频通话
  */
-@property (nonatomic, strong) UIButton *videoCallButton;
+@property (nonatomic, strong) PBMoreViewButton *videoCallButton;
+/**
+ *  名片
+ */
+@property (nonatomic, strong) PBMoreViewButton *cardButton;
 
 @end
 
@@ -77,106 +89,106 @@
     _pageControl.numberOfPages = 1;
     [self addSubview:_pageControl];
     
-    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONSIZE) / 5;
+    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONWIDTH) / (MOREVIEW_COL + 1);
     
-    self.photoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _photoButton.frame = CGRectMake(inset, inset, BUTTONSIZE, BUTTONSIZE);
+    self.audioCallButton =[PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    _audioCallButton.subTitleLabel.text = NSLocalizedString(@"语音通话", nil);
     
-    [_photoButton setBackgroundImage:[UIImage imageNamed:@"sharemore_otherDown@3x"]
-                            forState:UIControlStateNormal];
-    [_photoButton setImage:[UIImage imageNamed:@"sharemore_pic@3x"]
+    [_audioCallButton setImage:[UIImage imageNamed:@"dianhua"]
+                      forState:UIControlStateNormal];
+    [_audioCallButton setImage:[UIImage imageNamed:@"dianhua"]
+                      forState:UIControlStateHighlighted];
+    
+    [_audioCallButton addTarget:self
+                         action:@selector(takeAudioCallAction)
+               forControlEvents:UIControlEventTouchUpInside];
+    _audioCallButton.tag = BUTTONTAG;
+    [_scrollView addSubview:_audioCallButton];
+    
+    self.videoCallButton =[PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 2 + BUTTONWIDTH, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    _videoCallButton.subTitleLabel.text = NSLocalizedString(@"视频通话", nil);
+    
+    [_videoCallButton setImage:[UIImage imageNamed:@"shipin"]
+                      forState:UIControlStateNormal];
+    [_videoCallButton setImage:[UIImage imageNamed:@"shipin"]
+                      forState:UIControlStateHighlighted];
+    
+    [_videoCallButton addTarget:self
+                         action:@selector(takeVideoCallAction)
+               forControlEvents:UIControlEventTouchUpInside];
+    _videoCallButton.tag = BUTTONTAG + 1;
+    [_scrollView addSubview:_videoCallButton];
+    
+    self.photoButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 3 + BUTTONWIDTH * 2, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    _photoButton.subTitleLabel.text = NSLocalizedString(@"图片", nil);
+    
+    [_photoButton setImage:[UIImage imageNamed:@"tupian"]
                   forState:UIControlStateNormal];
-    [_photoButton setBackgroundImage:[UIImage imageNamed:@"sharemore_other_HL@3x"]
-                            forState:UIControlStateHighlighted];
-    [_photoButton setImage:[UIImage imageNamed:@"sharemore_pic@3x"]
+    [_photoButton setImage:[UIImage imageNamed:@"tupian"]
                   forState:UIControlStateHighlighted];
-    
     [_photoButton addTarget:self
                      action:@selector(photoButtonAction)
            forControlEvents:UIControlEventTouchUpInside];
-    _photoButton.tag = BUTTONTAG;
+    _photoButton.tag = BUTTONTAG + 2;
     [_scrollView addSubview:_photoButton];
     
-    self.takePicButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _takePicButton.frame = CGRectMake(inset * 2 + BUTTONSIZE, inset, BUTTONSIZE, BUTTONSIZE);
+    self.takePicButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 4 + BUTTONWIDTH * 3, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    _takePicButton.subTitleLabel.text = NSLocalizedString(@"拍照", nil);
     
-    [_takePicButton setBackgroundImage:[UIImage imageNamed:@"sharemore_otherDown@3x"]
-                              forState:UIControlStateNormal];
-    [_takePicButton setImage:[UIImage imageNamed:@"sharemore_video@3x"]
+    [_takePicButton setImage:[UIImage imageNamed:@"zhaopian"]
                     forState:UIControlStateNormal];
-    [_takePicButton setBackgroundImage:[UIImage imageNamed:@"sharemore_other_HL@3x"]
-                              forState:UIControlStateHighlighted];
-    [_takePicButton setImage:[UIImage imageNamed:@"sharemore_video@3x"]
+    [_takePicButton setImage:[UIImage imageNamed:@"zhaopian"]
                     forState:UIControlStateHighlighted];
-    
     [_takePicButton addTarget:self
                        action:@selector(takePicButtonAction)
              forControlEvents:UIControlEventTouchUpInside];
-    _takePicButton.tag = BUTTONTAG + 1;
+    _takePicButton.tag = BUTTONTAG + 3;
     [_scrollView addSubview:_takePicButton];
     
-    self.locationButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _locationButton.frame = CGRectMake(inset * 3 + BUTTONSIZE * 2, inset, BUTTONSIZE, BUTTONSIZE);
+    self.rewardButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset, BUTTONWIDTH + MOREVIEWTOPPADDING + MOREVIEWBOTTOMPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    _rewardButton.subTitleLabel.text = NSLocalizedString(@"打赏", nil);
     
-    [_locationButton setBackgroundImage:[UIImage imageNamed:@"sharemore_otherDown@3x"]
-                               forState:UIControlStateNormal];
-    [_locationButton setImage:[UIImage imageNamed:@"sharemore_location@3x"]
+    [_rewardButton setImage:[UIImage imageNamed:@"dashang"]
                      forState:UIControlStateNormal];
-    [_locationButton setBackgroundImage:[UIImage imageNamed:@"sharemore_other_HL@3x"]
-                               forState:UIControlStateHighlighted];
-    [_locationButton setImage:[UIImage imageNamed:@"sharemore_location@3x"]
+    [_rewardButton setImage:[UIImage imageNamed:@"dashang"]
                      forState:UIControlStateHighlighted];
+    [_rewardButton addTarget:self
+                        action:@selector(rewardButtonAction)
+              forControlEvents:UIControlEventTouchUpInside];
+    _locationButton.tag = BUTTONTAG + 4;
+    [_scrollView addSubview:_rewardButton];
     
+    self.locationButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 2 + BUTTONWIDTH, BUTTONWIDTH + MOREVIEWTOPPADDING + MOREVIEWBOTTOMPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    _locationButton.subTitleLabel.text = NSLocalizedString(@"位置", nil);
+    
+    [_locationButton setImage:[UIImage imageNamed:@"weizhi"]
+                     forState:UIControlStateNormal];
+    [_locationButton setImage:[UIImage imageNamed:@"weizhi"]
+                     forState:UIControlStateHighlighted];
     [_locationButton addTarget:self
                         action:@selector(locationButtonAction)
               forControlEvents:UIControlEventTouchUpInside];
-    _locationButton.tag = BUTTONTAG + 2;
+    _locationButton.tag = BUTTONTAG + 5;
     [_scrollView addSubview:_locationButton];
+    
+    self.cardButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 3 + BUTTONWIDTH * 2, BUTTONWIDTH + MOREVIEWTOPPADDING + MOREVIEWBOTTOMPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    _cardButton.subTitleLabel.text = NSLocalizedString(@"名片", nil);
+    
+    [_cardButton setImage:[UIImage imageNamed:@"mingpian"]
+                     forState:UIControlStateNormal];
+    [_cardButton setImage:[UIImage imageNamed:@"mingpian"]
+                     forState:UIControlStateHighlighted];
+    [_cardButton addTarget:self
+                    action:@selector(cardButtonAction)
+              forControlEvents:UIControlEventTouchUpInside];
+    _cardButton.tag = BUTTONTAG + 6;
+    [_scrollView addSubview:_cardButton];
+    
     //记录最大tag值
-    _maxIndex = 2;
-    
-    
-    if (type == PBEnterbarTypeChat) {
-        
-        self.audioCallButton =[UIButton buttonWithType:UIButtonTypeCustom];
-        [_audioCallButton setFrame:CGRectMake(inset * 4 + BUTTONSIZE * 3, inset, BUTTONSIZE , BUTTONSIZE)];
-        
-        [_audioCallButton setBackgroundImage:[UIImage imageNamed:@"sharemore_otherDown@3x"]
-                                    forState:UIControlStateNormal];
-        [_audioCallButton setImage:[UIImage imageNamed:@"sharemore_voiceinput@3x"]
-                          forState:UIControlStateNormal];
-        [_audioCallButton setBackgroundImage:[UIImage imageNamed:@"sharemore_other_HL@3x"]
-                                    forState:UIControlStateHighlighted];
-        [_audioCallButton setImage:[UIImage imageNamed:@"sharemore_voiceinput@3x"]
-                          forState:UIControlStateHighlighted];
-        
-        [_audioCallButton addTarget:self
-                             action:@selector(takeAudioCallAction)
-                   forControlEvents:UIControlEventTouchUpInside];
-        _audioCallButton.tag = BUTTONTAG + 3;
-        [_scrollView addSubview:_audioCallButton];
-        
-        self.videoCallButton =[UIButton buttonWithType:UIButtonTypeCustom];
-        [_videoCallButton setFrame:CGRectMake(inset, inset * 2 + BUTTONSIZE, BUTTONSIZE , BUTTONSIZE)];
-        
-        [_videoCallButton setBackgroundImage:[UIImage imageNamed:@"sharemore_otherDown@3x"]
-                                    forState:UIControlStateNormal];
-        [_videoCallButton setImage:[UIImage imageNamed:@"sharemore_videovoip@3x"]
-                          forState:UIControlStateNormal];
-        [_videoCallButton setBackgroundImage:[UIImage imageNamed:@"sharemore_other_HL@3x"]
-                                    forState:UIControlStateHighlighted];
-        [_videoCallButton setImage:[UIImage imageNamed:@"sharemore_videovoip@3x"]
-                          forState:UIControlStateHighlighted];
-        
-        [_videoCallButton addTarget:self
-                             action:@selector(takeVideoCallAction)
-                   forControlEvents:UIControlEventTouchUpInside];
-        _videoCallButton.tag = BUTTONTAG + 4;
-        [_scrollView addSubview:_videoCallButton];
-        _maxIndex = 4;
-    }
+    _maxIndex = 6;
+
     CGRect frame = self.frame;
-    frame.size.height = BUTTONSIZE * 2 + inset * 3;
+    frame.size.height = BUTTONWIDTH * MOREVIEW_ROW + MOREVIEWBOTTOMPADDING * MOREVIEW_ROW + MOREVIEWTOPPADDING;
     self.frame = frame;
     _scrollView.frame = CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame));
     _pageControl.frame = CGRectMake(0, CGRectGetHeight(frame) - 20 * ONEHEIGHT, CGRectGetWidth(frame), 20 * ONEHEIGHT);
@@ -189,7 +201,7 @@
            highlightedImage:(UIImage *)highLightedImage
                       title:(NSString *)title {
     
-    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONSIZE) / 5;
+    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONWIDTH) / 5;
     CGRect frame = self.frame;
     _maxIndex++;
     NSInteger pageSize = MOREVIEW_COL * MOREVIEW_ROW;
@@ -198,10 +210,10 @@
     NSInteger col = _maxIndex % MOREVIEW_COL;
     
     UIButton *moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    moreButton.frame = CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + BUTTONSIZE * col,
-                                  inset + inset * row + BUTTONSIZE * row,
-                                  BUTTONSIZE,
-                                  BUTTONSIZE);
+    moreButton.frame = CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + BUTTONWIDTH * col,
+                                  BUTTONWIDTH * row + MOREVIEWBOTTOMPADDING * (row - 1) + MOREVIEWTOPPADDING,
+                                  BUTTONWIDTH,
+                                  BUTTONWIDTH);
     [moreButton setImage:image forState:UIControlStateNormal];
     if (highLightedImage != nil) {
         [moreButton setImage:highLightedImage forState:UIControlStateHighlighted];
@@ -215,7 +227,7 @@
     [_scrollView setContentSize:CGSizeMake(CGRectGetWidth(self.frame) * (page + 1), CGRectGetHeight(self.frame))];
     [_pageControl setNumberOfPages:page + 1];
     
-    frame.size.height = BUTTONSIZE * 2 + inset * 3;
+    frame.size.height = BUTTONWIDTH * MOREVIEW_ROW + MOREVIEWBOTTOMPADDING * (row - 1) + MOREVIEWTOPPADDING;
     self.frame = frame;
     _scrollView.frame = CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame));
     _pageControl.frame = CGRectMake(0, CGRectGetHeight(frame) - 20 * ONEHEIGHT, CGRectGetWidth(frame), 20 * ONEHEIGHT);
@@ -303,6 +315,18 @@
         [_delegate moreViewVideoCallAction:self];
     }
 }
+//名片功能
+- (void)cardButtonAction {
+    if (_delegate && [_delegate respondsToSelector:@selector(moreViewCardButtonAction:)]) {
+        [_delegate moreViewCardButtonAction:self];
+    }
+}
+//打赏
+- (void)rewardButtonAction {
+    if (_delegate && [_delegate respondsToSelector:@selector(moreViewRewardButtonAction:)]) {
+        [_delegate moreViewRewardButtonAction:self];
+    }
+}
 //自定义按钮点击事件
 - (void)moreAction:(UIButton *)sender {
     UIButton *button = (UIButton*)sender;
@@ -316,7 +340,7 @@
 //移除按钮具体方法
 - (void)resetItemWithIndex:(NSInteger)index {
     
-    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONSIZE) / 5;
+    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONWIDTH) / 5;
     CGRect frame = self.frame;
     
     for (NSInteger i = index + 1; i < _maxIndex + 1; i++) {
@@ -329,10 +353,10 @@
             NSInteger row = (moveToIndex % pageSize) / MOREVIEW_COL;
             NSInteger col = moveToIndex % MOREVIEW_COL;
             
-            [moreButton setFrame:CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + BUTTONSIZE * col,
-                                            inset + inset * row + BUTTONSIZE * row,
-                                            BUTTONSIZE ,
-                                            BUTTONSIZE)];
+            [moreButton setFrame:CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + BUTTONWIDTH * col,
+                                            BUTTONWIDTH * row + MOREVIEWBOTTOMPADDING * (row - 1) + MOREVIEWTOPPADDING,
+                                            BUTTONWIDTH ,
+                                            BUTTONWIDTH)];
             
             moreButton.tag = BUTTONTAG + moveToIndex;
             [_scrollView setContentSize:CGSizeMake(CGRectGetWidth(self.frame) * (page + 1),
@@ -342,7 +366,7 @@
     }
     
     _maxIndex--;
-    frame.size.height = BUTTONSIZE * 2 + inset * 3;
+    frame.size.height = BUTTONWIDTH * MOREVIEW_ROW + MOREVIEWBOTTOMPADDING * MOREVIEW_ROW + MOREVIEWTOPPADDING;
     self.frame = frame;
     _scrollView.frame = CGRectMake(0,
                                    0,

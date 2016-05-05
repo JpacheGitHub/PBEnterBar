@@ -6,10 +6,10 @@
 //  Copyright © 2015年 Jpache. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 @interface PBEmojiTextAttchment : NSTextAttachment
 
-@property (nonatomic, strong) NSString *emojiTitle;
+@property (nonatomic, copy) NSString *emojiTitle;
 
 @end

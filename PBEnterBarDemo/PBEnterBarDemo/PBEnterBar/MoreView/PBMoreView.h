@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "PrefixHeader.pch"
 
 @protocol PBMoreViewDelegate;
 @interface PBMoreView : UIView
@@ -92,6 +91,18 @@
  *  @param moreView 容器视图
  */
 - (void)moreViewVideoCallAction:(PBMoreView *)moreView;
+/**
+ *  名片功能
+ *
+ *  @param moreView 容器视图
+ */
+- (void)moreViewCardButtonAction:(PBMoreView *)moreView;
+/**
+ *  打赏功能
+ *
+ *  @param moreView 视图容器
+ */
+- (void)moreViewRewardButtonAction:(PBMoreView *)moreView;
 /**
  *  自定义功能按钮点击事件
  *

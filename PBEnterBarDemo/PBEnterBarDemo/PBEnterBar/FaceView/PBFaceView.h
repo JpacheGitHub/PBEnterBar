@@ -17,6 +17,8 @@
  */
 - (void)selectedFacialView:(NSString *)emojiTitle faceImage:(UIImage *)image isDelete:(BOOL)isDelete;
 
+- (void)sendFaceButtonAction:(UIButton *)sender;
+
 @end
 
 @interface PBFaceView : UIView

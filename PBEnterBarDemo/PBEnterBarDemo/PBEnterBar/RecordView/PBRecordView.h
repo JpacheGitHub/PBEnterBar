@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "PrefixHeader.pch"
 
 @protocol PBRecordViewDelegate <NSObject>
 

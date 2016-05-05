@@ -9,11 +9,15 @@
  表情处理类，当文本中需要有表情显示时，使用此类进行处理
  */
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import "PBEmojiTextAttchment.h"
 #import "NSAttributedString+PBEmojiExtension.h"
 
 @interface PBEmojiManager : NSObject
+
+@property (nonatomic, strong) NSDictionary *emojiDic;
+
+
++ (instancetype)shareManager;
 /**
  *  获取所有表情图片
  *

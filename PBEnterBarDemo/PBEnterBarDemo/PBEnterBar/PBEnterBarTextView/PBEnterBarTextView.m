@@ -7,6 +7,7 @@
 //
 
 #import "PBEnterBarTextView.h"
+#import "PBEmojiManager.h"
 
 @implementation PBEnterBarTextView
 
@@ -28,18 +29,19 @@
                                                  name:UITextViewTextDidChangeNotification
                                                object:self];
     
-    self.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    self.scrollIndicatorInsets = UIEdgeInsetsMake(10.0f, 0.0f, 10.0f, 8.0f);
+    self.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+//    self.scrollIndicatorInsets = UIEdgeInsetsMake(10.0f, 0.0f, 10.0f, 8.0f);
     self.contentInset = UIEdgeInsetsZero;
     self.scrollEnabled = YES;
     self.scrollsToTop = NO;
+    self.enablesReturnKeyAutomatically = YES;
     self.userInteractionEnabled = YES;
-    self.font = [UIFont systemFontOfSize:16.0f];
+    self.font = [UIFont systemFontOfSize:15.0f];
     self.textColor = [UIColor blackColor];
     self.backgroundColor = [UIColor whiteColor];
     self.keyboardAppearance = UIKeyboardAppearanceDefault;
     self.keyboardType = UIKeyboardTypeDefault;
-    self.returnKeyType = UIReturnKeyDefault;
+    self.returnKeyType = UIReturnKeySend;
     self.textAlignment = NSTextAlignmentLeft;
 }
 
@@ -83,6 +85,11 @@
 
 - (void)setTextAlignment:(NSTextAlignment)textAlignment {
     [super setTextAlignment:textAlignment];
+    [self setNeedsDisplay];
+}
+
+- (void)insertText:(NSString *)text {
+    [super insertText:text];
     [self setNeedsDisplay];
 }
 

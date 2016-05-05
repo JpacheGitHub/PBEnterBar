@@ -15,7 +15,9 @@
  *  @param emojiTitle 当前选中表情的标题
  *  @param isDelete   是否是删除键
  */
--(void)selectedFacialView:(NSString*)emojiTitle faceImage:(UIImage *)image isDelete:(BOOL)isDelete;
+- (void)selectedFacialView:(NSString*)emojiTitle faceImage:(UIImage *)image isDelete:(BOOL)isDelete;
+
+- (void)sendFaceButtonAction:(UIButton *)sender;
 
 @end
 

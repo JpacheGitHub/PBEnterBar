@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
@@ -16,36 +16,20 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="XrK-Zq-JlB">
-                        <rect key="frame" x="5" y="5" width="106" height="106"/>
+                        <rect key="frame" x="8" y="8" width="100" height="100"/>
                         <constraints>
-                            <constraint firstAttribute="width" secondItem="XrK-Zq-JlB" secondAttribute="height" multiplier="1:1" id="FNR-0u-cGJ"/>
                             <constraint firstAttribute="width" secondItem="XrK-Zq-JlB" secondAttribute="height" multiplier="1:1" id="fxX-Fu-AUs"/>
                         </constraints>
-                        <variation key="default">
-                            <mask key="constraints">
-                                <exclude reference="FNR-0u-cGJ"/>
-                            </mask>
-                        </variation>
                     </imageView>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             </view>
             <constraints>
-                <constraint firstItem="XrK-Zq-JlB" firstAttribute="top" secondItem="0ex-tn-VhG" secondAttribute="top" id="3aL-ff-BVE"/>
-                <constraint firstAttribute="trailing" secondItem="XrK-Zq-JlB" secondAttribute="trailing" constant="5" id="BkJ-mc-Hvy"/>
-                <constraint firstAttribute="trailing" secondItem="XrK-Zq-JlB" secondAttribute="trailing" id="Ipv-QK-b7s"/>
-                <constraint firstAttribute="bottom" secondItem="XrK-Zq-JlB" secondAttribute="bottom" constant="5" id="RMH-4f-k8v"/>
-                <constraint firstAttribute="bottom" secondItem="XrK-Zq-JlB" secondAttribute="bottom" id="V3J-Ml-dtH"/>
-                <constraint firstItem="XrK-Zq-JlB" firstAttribute="top" secondItem="0ex-tn-VhG" secondAttribute="top" constant="5" id="e8I-sU-5Nu"/>
+                <constraint firstAttribute="trailing" secondItem="XrK-Zq-JlB" secondAttribute="trailing" constant="8" id="BkJ-mc-Hvy"/>
+                <constraint firstAttribute="bottom" secondItem="XrK-Zq-JlB" secondAttribute="bottom" constant="8" id="RMH-4f-k8v"/>
+                <constraint firstItem="XrK-Zq-JlB" firstAttribute="top" secondItem="0ex-tn-VhG" secondAttribute="top" constant="8" id="e8I-sU-5Nu"/>
             </constraints>
             <size key="customSize" width="116" height="116"/>
-            <variation key="default">
-                <mask key="constraints">
-                    <exclude reference="3aL-ff-BVE"/>
-                    <exclude reference="Ipv-QK-b7s"/>
-                    <exclude reference="V3J-Ml-dtH"/>
-                </mask>
-            </variation>
             <connections>
                 <outlet property="faceImage" destination="XrK-Zq-JlB" id="7fK-Yf-IFo"/>
             </connections>

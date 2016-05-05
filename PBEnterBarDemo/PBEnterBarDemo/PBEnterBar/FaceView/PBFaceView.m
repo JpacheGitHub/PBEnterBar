@@ -38,6 +38,12 @@
     }
 }
 
+- (void)sendFaceButtonAction:(UIButton *)sender {
+    if (_delegate && [_delegate respondsToSelector:@selector(sendFaceButtonAction:)]) {
+        [_delegate sendFaceButtonAction:sender];
+    }
+}
+
 /*
 // Only override drawRect: if you perform custom drawing.
 // An empty implementation adversely affects performance during animation.

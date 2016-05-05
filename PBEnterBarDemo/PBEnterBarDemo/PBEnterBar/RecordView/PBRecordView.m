@@ -33,18 +33,24 @@
 
 @implementation PBRecordView
 
-+ (void)initialize {
-    // UIAppearance Proxy Defaults
-    PBRecordView *recordView = [self appearance];
-    recordView.voiceMessageAnimationImages = @[@"RecordingSignal001@3x", @"RecordingSignal002@3x", @"RecordingSignal003@3x", @"RecordingSignal004@3x", @"RecordingSignal005@3x", @"RecordingSignal006@3x", @"RecordingSignal007@3x", @"RecordingSignal008@3x",];
-    recordView.upCancelText = @"手指上划, 取消发送";
-    recordView.loosenCancelText = @"松开手指, 取消发送";
-}
+//+ (void)initialize {
+//    // UIAppearance Proxy Defaults
+//    PBRecordView *recordView = [self appearance];
+//    recordView.voiceMessageAnimationImages = @[@"RecordingSignal001", @"RecordingSignal002", @"RecordingSignal003", @"RecordingSignal004", @"RecordingSignal005", @"RecordingSignal006", @"RecordingSignal007", @"RecordingSignal008",];
+//    recordView.upCancelText = @"手指上划, 取消发送";
+//    recordView.loosenCancelText = @"松开手指, 取消发送";
+//}
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
+        
         // Initialization code
+        
+        _voiceMessageAnimationImages = @[@"RecordingSignal001", @"RecordingSignal002", @"RecordingSignal003", @"RecordingSignal004", @"RecordingSignal005", @"RecordingSignal006", @"RecordingSignal007", @"RecordingSignal008",];
+        _upCancelText = NSLocalizedString(@"手指上划, 取消发送", nil);
+        _loosenCancelText = NSLocalizedString(@"松开手指, 取消发送", nil);
+        
         UIView *bgView = [[UIView alloc] initWithFrame:self.bounds];
         bgView.backgroundColor = [UIColor grayColor];
         bgView.layer.cornerRadius = 5;
@@ -52,28 +58,32 @@
         bgView.alpha = 0.6;
         [self addSubview:bgView];
         
-        self.recordingImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"RecordingBkg@3x"]];
+        self.recordingImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"RecordingBkg"]];
         _recordingImage.frame = CGRectMake(10,
                                            0,
                                            (self.frame.size.width - 20) / 2,
                                            self.frame.size.height - 30);
         _recordingImage.contentMode = UIViewContentModeScaleAspectFit;
+        _recordingImage.hidden = YES;
         [self addSubview:_recordingImage];
         
         self.recordAnimationView = [[UIImageView alloc] initWithFrame:CGRectMake(self.frame.size.width / 2,
                                                                                  0,
                                                                                  (self.frame.size.width - 20) / 2,
                                                                                  self.bounds.size.height - 30)];
-        _recordAnimationView.image = [UIImage imageNamed:@"RecordingSignal001@3x"];
+        _recordAnimationView.image = [UIImage imageNamed:@"RecordingSignal001"];
         _recordAnimationView.contentMode = UIViewContentModeScaleAspectFit;
+        _recordAnimationView.hidden = YES;
         [self addSubview:_recordAnimationView];
         
-        self.cancelImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"RecordCancel@3x"]];
+        self.cancelImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"RecordCancel"]];
         _cancelImage.frame = CGRectMake(10,
                                         0,
                                         self.frame.size.width - 20,
                                         self.frame.size.height - 30);
         _cancelImage.contentMode = UIViewContentModeScaleAspectFit;
+        _cancelImage.hidden = YES;
+        [self addSubview:_cancelImage];
         
         self.textLabel = [[UILabel alloc] initWithFrame:CGRectMake(5,
                                                                    self.bounds.size.height - 30,
@@ -82,7 +92,7 @@
         
         _textLabel.textAlignment = NSTextAlignmentCenter;
         _textLabel.backgroundColor = [UIColor clearColor];
-        _textLabel.text = @"这是提示";
+        _textLabel.text = _upCancelText;
         [self addSubview:_textLabel];
         _textLabel.font = [UIFont systemFontOfSize:13];
         _textLabel.textColor = [UIColor whiteColor];
@@ -112,56 +122,58 @@
 
 // 按下录音按钮
 - (void)recordButtonTouchDown {
-    if ([_cancelImage superview]) {
-        [_cancelImage removeFromSuperview];
+    if (_cancelImage.hidden == NO) {
+        _cancelImage.hidden = YES;
     }
-    [self addSubview:_recordingImage];
-    [self addSubview:_recordAnimationView];
+    
+    _recordingImage.hidden = NO;
+    _recordAnimationView.hidden = NO;
     _textLabel.text = _upCancelText;
     _textLabel.backgroundColor = [UIColor clearColor];
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:0.05
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:0.01
                                                   target:self
                                                 selector:@selector(setVoiceImage)
                                                 userInfo:nil
                                                  repeats:YES];
+    [[NSRunLoop mainRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
 }
 
 // 在录音按钮内部离开时
 - (void)recordButtonTouchUpInside {
-    if ([_cancelImage superview]) {
-        [_cancelImage removeFromSuperview];
+    if (_cancelImage.hidden == NO) {
+        _cancelImage.hidden = YES;
     }
-    [self addSubview:_recordingImage];
-    [self addSubview:_recordAnimationView];
+    _recordAnimationView.hidden = NO;
+    _recordingImage.hidden = NO;
     [_timer invalidate];
 }
 
 // 在录音按钮外部离开时
 - (void)recordButtonTouchUpOutside {
-    if ([_cancelImage superview]) {
-        [_cancelImage removeFromSuperview];
+    if (_cancelImage.hidden == NO) {
+        _cancelImage.hidden = YES;
     }
-    [self addSubview:_recordingImage];
-    [self addSubview:_recordAnimationView];
+    _recordingImage.hidden = NO;
+    _recordAnimationView.hidden = YES;
     [_timer invalidate];
 }
 
 // 手指移动到录音按钮内部
 - (void)recordButtonDragInside {
-    if ([_cancelImage superview]) {
-        [_cancelImage removeFromSuperview];
+    if (_cancelImage.hidden == NO) {
+        _cancelImage.hidden = YES;
     }
-    [self addSubview:_recordingImage];
-    [self addSubview:_recordAnimationView];
+    _recordingImage.hidden = NO;
+    _recordAnimationView.hidden = NO;
     _textLabel.text = _upCancelText;
     _textLabel.backgroundColor = [UIColor clearColor];
 }
 
 // 手指移动到录音按钮外部
 - (void)recordButtonDragOutside {
-    [_recordAnimationView removeFromSuperview];
-    [_recordingImage removeFromSuperview];
-    [self addSubview:_cancelImage];
+    _recordAnimationView.hidden = YES;
+    _recordingImage.hidden = YES;
+    _cancelImage.hidden = NO;
     _textLabel.text = _loosenCancelText;
     _textLabel.backgroundColor = [UIColor redColor];
 }

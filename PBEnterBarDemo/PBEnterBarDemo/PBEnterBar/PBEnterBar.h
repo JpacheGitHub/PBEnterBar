@@ -14,6 +14,10 @@
 @interface PBEnterBar : UIView
 
 @property (nonatomic, assign) id<PBEnterBarDelegate> delegate;
+
+@property (nonatomic, strong) UIView *enterBarView;
+@property (nonatomic, copy) NSString *defaultImageName;
+@property (nonatomic, copy) NSString *defaultHLImageName;
 /**
  *  输入框
  */
@@ -22,14 +26,20 @@
  *  附加功能按钮
  */
 @property (nonatomic, strong) UIButton *moreButton;
+@property (nonatomic, copy) NSString *moreImageName;
+@property (nonatomic, copy) NSString *moreHLImageName;
 /**
  *  表情按钮
  */
 @property (nonatomic, strong) UIButton *faceButton;
+@property (nonatomic, copy) NSString *faceImageName;
+@property (nonatomic, copy) NSString *faceHLImageName;
 /**
  *  语音按钮
  */
 @property (nonatomic, strong) UIButton *recordButton;
+@property (nonatomic, copy) NSString *recordImageName;
+@property (nonatomic, copy) NSString *recordHLImageName;
 /**
  *  表情页
  */
@@ -70,7 +80,7 @@
  *  初始化chatBar
  *
  *  @param frame              视图位置信息
- *  @param horizontalPadding  横向边距, 默认8
+ *  @param horizontalPadding  横向边距, 默认5
  *  @param verticalPadding    纵向间距, 默认5
  *  @param inputViewMinHeight 输入框最小高度, 默认36
  *  @param inputViewMaxHeight 输入框最大高度, 默认150

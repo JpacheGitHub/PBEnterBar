@@ -12,10 +12,14 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        _faceImage.contentMode = UIViewContentModeRedraw;
+        _faceImage.contentMode = UIViewContentModeScaleAspectFit;
         _faceImage.userInteractionEnabled = YES;
     }
     return self;
+}
+
+- (BOOL)canBecomeFirstResponder {
+    return YES;
 }
 
 @end
