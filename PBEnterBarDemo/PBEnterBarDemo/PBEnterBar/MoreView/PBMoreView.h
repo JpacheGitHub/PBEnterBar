@@ -6,7 +6,9 @@
 //  Copyright © 2015年 Jpache. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "PBEnterBarHeader.h"
 
 @protocol PBMoreViewDelegate;
 @interface PBMoreView : UIView

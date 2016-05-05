@@ -1,16 +1,13 @@
 //
-//  PrefixHeader.pch
+//  PBEnterBarHeader.h
 //  PBEnterBarDemo
 //
-//  Created by Jpache on 15/12/21.
-//  Copyright © 2015年 Jpache. All rights reserved.
+//  Created by Jpache on 16/5/5.
+//  Copyright © 2016年 Jpache. All rights reserved.
 //
 
-#ifndef PrefixHeader_pch
-#define PrefixHeader_pch
-
-// Include any system framework and library headers here that should be included in all compilation units.
-// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+#ifndef PBEnterBarHeader_h
+#define PBEnterBarHeader_h
 
 //屏幕宽度
 #define kWidth [UIScreen mainScreen].bounds.size.width
@@ -35,4 +32,4 @@ typedef NS_ENUM(NSInteger, PBRecordViewType) {
     PBRecordViewTypeDragOutside,               //手指移动到录音键外部
 };
 
-#endif /* PrefixHeader_pch */
+#endif /* PBEnterBarHeader_h */

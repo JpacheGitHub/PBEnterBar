@@ -81,7 +81,7 @@
     
     _sendButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _sendButton.frame = CGRectMake(_collectionView.frame.size.width - 80, self.frame.size.height / 5 * 4, 80, self.frame.size.height / 5);
-    _sendButton.backgroundColor = PINK_LIGHT_COLOR;
+    _sendButton.backgroundColor = [UIColor blueColor];
     [_sendButton setTitle:NSLocalizedString(@"发送", nil) forState:UIControlStateNormal];
     [_sendButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_sendButton addTarget:self action:@selector(sendButtonAction:) forControlEvents:UIControlEventTouchUpInside];

@@ -13,6 +13,7 @@
 #import "PBRecordView.h"
 #import "PBEmojiManager.h"
 
+
 @interface PBChatViewController ()<PBEnterBarDelegate, PBMoreViewDelegate, PBRecordViewDelegate, UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, strong) PBEnterBar *enterBar;
@@ -116,7 +117,7 @@
 }
 
 - (void)didStartRecordingVoiceAction:(UIView *)recordView {
-    [_recordView recordButtonTouchDown];
+    
     if ([self canRecord]) {
         //如果设备允许访问麦克风
         PBRecordView *tempView = (PBRecordView *)recordView;
@@ -129,21 +130,21 @@
 }
 
 - (void)didCancelRecordingVoiceAction:(UIView *)recordView {
-    [_recordView recordButtonTouchUpOutside];
+    
     [_recordView removeFromSuperview];
 }
 
 - (void)didFinishRecoingVoiceAction:(UIView *)recordView {
-    [_recordView recordButtonTouchUpInside];
+    
     [_recordView removeFromSuperview];
 }
 
 - (void)didDragOutsideAction:(UIView *)recordView {
-    [_recordView recordButtonDragOutside];
+    
 }
 
 - (void)didDragInsideAction:(UIView *)recordView {
-    [_recordView recordButtonDragInside];
+    
 }
 
 - (void)didSendText:(NSString *)text {
