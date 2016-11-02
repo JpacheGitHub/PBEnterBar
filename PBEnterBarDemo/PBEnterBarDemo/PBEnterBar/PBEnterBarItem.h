@@ -17,9 +17,9 @@
 /**
  *  点击按钮之后在toolbar下方延伸出的页面
  */
-@property (strong, nonatomic) UIView *button2View;
+@property (strong, nonatomic) UIView *extendView;
 
 - (instancetype)initWithButton:(UIButton *)button
-                      withView:(UIView *)button2View;
+                    extendView:(UIView *)extendView;
 
 @end

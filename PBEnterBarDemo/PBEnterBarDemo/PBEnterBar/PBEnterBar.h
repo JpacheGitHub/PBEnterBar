@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "PBMoreView.h"
-#import "PBEnterBarTextView.h"
+#import "PBEnterBarDefine.h"
+
+@class PBFaceView, PBMoreView, PBRecordView, PBEnterBarTextView;
 
 @protocol PBEnterBarDelegate;
 @interface PBEnterBar : UIView
@@ -43,17 +44,17 @@
 /**
  *  表情页
  */
-@property (nonatomic, strong) UIView *faceView;
+@property (nonatomic, strong) PBFaceView *faceView;
 /**
  *  附加功能页
  */
-@property (nonatomic, strong) UIView *moreView;
+@property (nonatomic, strong) PBMoreView *moreView;
 /**
  *  录音页
  */
-@property (nonatomic, strong) UIView *recordView;
+@property (nonatomic, strong) PBRecordView *recordView;
 /**
- *  chatBar类型
+ *  enterBar类型
  */
 @property (nonatomic, assign) PBEnterBarType enterBarType;
 /**
@@ -73,21 +74,32 @@
  */
 @property (nonatomic, assign, readonly) CGFloat verticalPadding;
 
-- (instancetype)initWithFrame:(CGRect)frame
-                         type:(PBEnterBarType)type;
-
 /**
- *  初始化chatBar
+ *  初始化方法
  *
  *  @param frame              视图位置信息
  *  @param horizontalPadding  横向边距, 默认5
  *  @param verticalPadding    纵向间距, 默认5
  *  @param inputViewMinHeight 输入框最小高度, 默认36
  *  @param inputViewMaxHeight 输入框最大高度, 默认150
- *  @param type               chatBar类型, 默认群聊类型
+ *  @param type               enterBar类型, 默认群聊类型
  *
- *  @return chatBar
+ *  @return enterBar
  */
+
+- (instancetype)init;
+
+- (instancetype)initWithType:(PBEnterBarType)type;
+
+- (instancetype)initWithHorizontalPadding:(CGFloat)horizontalPadding
+                          verticalPadding:(CGFloat)verticalPadding
+                       inputViewMinHeight:(CGFloat)inputViewMinHeight
+                       inputViewMaxHeight:(CGFloat)inputViewMaxHeight
+                                     type:(PBEnterBarType)type;
+
+- (instancetype)initWithFrame:(CGRect)frame
+                         type:(PBEnterBarType)type;
+
 - (instancetype)initWithFrame:(CGRect)frame
             horizontalPadding:(CGFloat)horizontalPadding
               verticalPadding:(CGFloat)verticalPadding
@@ -153,24 +165,24 @@
 #pragma mark - record
 
 /**
- *  按下录音按钮开始录音
+ *  按下录音按钮开始录音, 会自动判断是否允许使用麦克风, 如果不允许, 则按下按钮也不会触发代理
  */
-- (void)didStartRecordingVoiceAction:(UIView *)recordView;
+- (void)didStartRecordingVoiceAction:(PBRecordView *)recordView;
 /**
  *  手指向上滑动取消录音
  */
-- (void)didCancelRecordingVoiceAction:(UIView *)recordView;
+- (void)didCancelRecordingVoiceAction:(PBRecordView *)recordView;
 /**
  *  松开手指完成录音
  */
-- (void)didFinishRecoingVoiceAction:(UIView *)recordView;
+- (void)didFinishRecoingVoiceAction:(PBRecordView *)recordView;
 /**
- *  当手指离开按钮的范围内时，主要为了通知外部的HUD(就是个提示)
+ *  当手指离开按钮的范围内时，主要为了通知外部的HUD
  */
-- (void)didDragOutsideAction:(UIView *)recordView;
+- (void)didDragOutsideAction:(PBRecordView *)recordView;
 /**
  *  当手指再次进入按钮的范围内时，主要也是为了通知外部的HUD
  */
-- (void)didDragInsideAction:(UIView *)recordView;
+- (void)didDragInsideAction:(PBRecordView *)recordView;
 
 @end

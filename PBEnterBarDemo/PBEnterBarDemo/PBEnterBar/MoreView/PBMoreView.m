@@ -9,17 +9,19 @@
 #import "PBMoreView.h"
 #import "PBMoreViewButton.h"
 
-//button大小
-#define BUTTONWIDTH (70 * (ONEWIDTH))
-//button.tag 初始值
-#define BUTTONTAG 15000
-//列数
-#define MOREVIEW_COL 4
-//行数
-#define MOREVIEW_ROW 2
 
-#define MOREVIEWTOPPADDING (BUTTONWIDTH * 0.2)
-#define MOREVIEWBOTTOMPADDING (10 + (BUTTONWIDTH * 0.2))
+// button.tag 初始值
+static NSInteger const kPBMoreViewBtnTag = 15000;
+// 列数
+static NSInteger const kPBMoreViewColum = 4;
+// 行数
+static NSInteger const kPBMoreViewRow = 2;
+
+// button大小
+#define kMoreViewButtonWidth (70 * ([UIScreen mainScreen].bounds.size.width / 375))
+// button的上下间隔
+#define kMoreViewTopPadding (kMoreViewButtonWidth * 0.2)
+#define kMoreViewBottomPadding (10 + (kMoreViewButtonWidth * 0.2))
 
 @interface PBMoreView ()<UIScrollViewDelegate>
 
@@ -89,9 +91,9 @@
     _pageControl.numberOfPages = 1;
     [self addSubview:_pageControl];
     
-    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONWIDTH) / (MOREVIEW_COL + 1);
+    CGFloat inset = (self.frame.size.width - kPBMoreViewColum * kMoreViewButtonWidth) / (kPBMoreViewColum + 1);
     
-    self.audioCallButton =[PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    self.audioCallButton =[PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset, kMoreViewTopPadding, kMoreViewButtonWidth, kMoreViewButtonWidth)];
     _audioCallButton.subTitleLabel.text = NSLocalizedString(@"语音通话", nil);
     
     [_audioCallButton setImage:[UIImage imageNamed:@"dianhua"]
@@ -102,10 +104,10 @@
     [_audioCallButton addTarget:self
                          action:@selector(takeAudioCallAction)
                forControlEvents:UIControlEventTouchUpInside];
-    _audioCallButton.tag = BUTTONTAG;
+    _audioCallButton.tag = kPBMoreViewBtnTag;
     [_scrollView addSubview:_audioCallButton];
     
-    self.videoCallButton =[PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 2 + BUTTONWIDTH, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    self.videoCallButton =[PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 2 + kMoreViewButtonWidth, kMoreViewTopPadding, kMoreViewButtonWidth, kMoreViewButtonWidth)];
     _videoCallButton.subTitleLabel.text = NSLocalizedString(@"视频通话", nil);
     
     [_videoCallButton setImage:[UIImage imageNamed:@"shipin"]
@@ -116,10 +118,10 @@
     [_videoCallButton addTarget:self
                          action:@selector(takeVideoCallAction)
                forControlEvents:UIControlEventTouchUpInside];
-    _videoCallButton.tag = BUTTONTAG + 1;
+    _videoCallButton.tag = kPBMoreViewBtnTag + 1;
     [_scrollView addSubview:_videoCallButton];
     
-    self.photoButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 3 + BUTTONWIDTH * 2, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    self.photoButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 3 + kMoreViewButtonWidth * 2, kMoreViewTopPadding, kMoreViewButtonWidth, kMoreViewButtonWidth)];
     _photoButton.subTitleLabel.text = NSLocalizedString(@"图片", nil);
     
     [_photoButton setImage:[UIImage imageNamed:@"tupian"]
@@ -129,10 +131,10 @@
     [_photoButton addTarget:self
                      action:@selector(photoButtonAction)
            forControlEvents:UIControlEventTouchUpInside];
-    _photoButton.tag = BUTTONTAG + 2;
+    _photoButton.tag = kPBMoreViewBtnTag + 2;
     [_scrollView addSubview:_photoButton];
     
-    self.takePicButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 4 + BUTTONWIDTH * 3, MOREVIEWTOPPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    self.takePicButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 4 + kMoreViewButtonWidth * 3, kMoreViewTopPadding, kMoreViewButtonWidth, kMoreViewButtonWidth)];
     _takePicButton.subTitleLabel.text = NSLocalizedString(@"拍照", nil);
     
     [_takePicButton setImage:[UIImage imageNamed:@"zhaopian"]
@@ -142,10 +144,10 @@
     [_takePicButton addTarget:self
                        action:@selector(takePicButtonAction)
              forControlEvents:UIControlEventTouchUpInside];
-    _takePicButton.tag = BUTTONTAG + 3;
+    _takePicButton.tag = kPBMoreViewBtnTag + 3;
     [_scrollView addSubview:_takePicButton];
     
-    self.rewardButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset, BUTTONWIDTH + MOREVIEWTOPPADDING + MOREVIEWBOTTOMPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    self.rewardButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset, kMoreViewButtonWidth + kMoreViewTopPadding + kMoreViewBottomPadding, kMoreViewButtonWidth, kMoreViewButtonWidth)];
     _rewardButton.subTitleLabel.text = NSLocalizedString(@"打赏", nil);
     
     [_rewardButton setImage:[UIImage imageNamed:@"dashang"]
@@ -155,10 +157,10 @@
     [_rewardButton addTarget:self
                         action:@selector(rewardButtonAction)
               forControlEvents:UIControlEventTouchUpInside];
-    _locationButton.tag = BUTTONTAG + 4;
+    _locationButton.tag = kPBMoreViewBtnTag + 4;
     [_scrollView addSubview:_rewardButton];
     
-    self.locationButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 2 + BUTTONWIDTH, BUTTONWIDTH + MOREVIEWTOPPADDING + MOREVIEWBOTTOMPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    self.locationButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 2 + kMoreViewButtonWidth, kMoreViewButtonWidth + kMoreViewTopPadding + kMoreViewBottomPadding, kMoreViewButtonWidth, kMoreViewButtonWidth)];
     _locationButton.subTitleLabel.text = NSLocalizedString(@"位置", nil);
     
     [_locationButton setImage:[UIImage imageNamed:@"weizhi"]
@@ -168,10 +170,10 @@
     [_locationButton addTarget:self
                         action:@selector(locationButtonAction)
               forControlEvents:UIControlEventTouchUpInside];
-    _locationButton.tag = BUTTONTAG + 5;
+    _locationButton.tag = kPBMoreViewBtnTag + 5;
     [_scrollView addSubview:_locationButton];
     
-    self.cardButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 3 + BUTTONWIDTH * 2, BUTTONWIDTH + MOREVIEWTOPPADDING + MOREVIEWBOTTOMPADDING, BUTTONWIDTH, BUTTONWIDTH)];
+    self.cardButton = [PBMoreViewButton buttonWithType:UIButtonTypeCustom frame:CGRectMake(inset * 3 + kMoreViewButtonWidth * 2, kMoreViewButtonWidth + kMoreViewTopPadding + kMoreViewBottomPadding, kMoreViewButtonWidth, kMoreViewButtonWidth)];
     _cardButton.subTitleLabel.text = NSLocalizedString(@"名片", nil);
     
     [_cardButton setImage:[UIImage imageNamed:@"mingpian"]
@@ -181,17 +183,17 @@
     [_cardButton addTarget:self
                     action:@selector(cardButtonAction)
               forControlEvents:UIControlEventTouchUpInside];
-    _cardButton.tag = BUTTONTAG + 6;
+    _cardButton.tag = kPBMoreViewBtnTag + 6;
     [_scrollView addSubview:_cardButton];
     
     //记录最大tag值
     _maxIndex = 6;
 
     CGRect frame = self.frame;
-    frame.size.height = BUTTONWIDTH * MOREVIEW_ROW + MOREVIEWBOTTOMPADDING * MOREVIEW_ROW + MOREVIEWTOPPADDING;
+    frame.size.height = kMoreViewButtonWidth * kPBMoreViewRow + kMoreViewBottomPadding * kPBMoreViewRow + kMoreViewTopPadding;
     self.frame = frame;
     _scrollView.frame = CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame));
-    _pageControl.frame = CGRectMake(0, CGRectGetHeight(frame) - 20 * ONEHEIGHT, CGRectGetWidth(frame), 20 * ONEHEIGHT);
+    _pageControl.frame = CGRectMake(0, CGRectGetHeight(frame) - 20 * ([UIScreen mainScreen].bounds.size.height / 667), CGRectGetWidth(frame), 20 * ([UIScreen mainScreen].bounds.size.height / 667));
     _pageControl.hidden = _pageControl.numberOfPages <= 1;
 }
 
@@ -201,19 +203,19 @@
            highlightedImage:(UIImage *)highLightedImage
                       title:(NSString *)title {
     
-    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONWIDTH) / 5;
+    CGFloat inset = (self.frame.size.width - kPBMoreViewColum * kMoreViewButtonWidth) / 5;
     CGRect frame = self.frame;
     _maxIndex++;
-    NSInteger pageSize = MOREVIEW_COL * MOREVIEW_ROW;
+    NSInteger pageSize = kPBMoreViewColum * kPBMoreViewRow;
     NSInteger page = _maxIndex / pageSize;
-    NSInteger row = (_maxIndex % pageSize) / MOREVIEW_COL;
-    NSInteger col = _maxIndex % MOREVIEW_COL;
+    NSInteger row = (_maxIndex % pageSize) / kPBMoreViewColum;
+    NSInteger col = _maxIndex % kPBMoreViewColum;
     
     UIButton *moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    moreButton.frame = CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + BUTTONWIDTH * col,
-                                  BUTTONWIDTH * row + MOREVIEWBOTTOMPADDING * (row - 1) + MOREVIEWTOPPADDING,
-                                  BUTTONWIDTH,
-                                  BUTTONWIDTH);
+    moreButton.frame = CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + kMoreViewButtonWidth * col,
+                                  kMoreViewButtonWidth * row + kMoreViewBottomPadding * (row - 1) + kMoreViewTopPadding,
+                                  kMoreViewButtonWidth,
+                                  kMoreViewButtonWidth);
     [moreButton setImage:image forState:UIControlStateNormal];
     if (highLightedImage != nil) {
         [moreButton setImage:highLightedImage forState:UIControlStateHighlighted];
@@ -221,16 +223,16 @@
     [moreButton addTarget:self
                    action:@selector(moreAction:)
          forControlEvents:UIControlEventTouchUpInside];
-    moreButton.tag = BUTTONTAG + _maxIndex;
+    moreButton.tag = kPBMoreViewBtnTag + _maxIndex;
     [_scrollView addSubview:moreButton];
     
     [_scrollView setContentSize:CGSizeMake(CGRectGetWidth(self.frame) * (page + 1), CGRectGetHeight(self.frame))];
     [_pageControl setNumberOfPages:page + 1];
     
-    frame.size.height = BUTTONWIDTH * MOREVIEW_ROW + MOREVIEWBOTTOMPADDING * (row - 1) + MOREVIEWTOPPADDING;
+    frame.size.height = kMoreViewButtonWidth * kPBMoreViewRow + kMoreViewBottomPadding * (row - 1) + kMoreViewTopPadding;
     self.frame = frame;
     _scrollView.frame = CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame));
-    _pageControl.frame = CGRectMake(0, CGRectGetHeight(frame) - 20 * ONEHEIGHT, CGRectGetWidth(frame), 20 * ONEHEIGHT);
+    _pageControl.frame = CGRectMake(0, CGRectGetHeight(frame) - 20 * ([UIScreen mainScreen].bounds.size.height / 667), CGRectGetWidth(frame), 20 * ([UIScreen mainScreen].bounds.size.height / 667));
     _pageControl.hidden = _pageControl.numberOfPages <= 1;
 }
 
@@ -240,7 +242,7 @@
                       title:(NSString *)title
                     atIndex:(NSInteger)index {
     
-    UIView *moreButton = [_scrollView viewWithTag:BUTTONTAG + index];
+    UIView *moreButton = [_scrollView viewWithTag:kPBMoreViewBtnTag + index];
     if (moreButton && [moreButton isKindOfClass:[UIButton class]]) {
         
         [(UIButton*)moreButton setImage:image forState:UIControlStateNormal];
@@ -254,7 +256,7 @@
 //移除按钮
 - (void)removeItemWithIndex:(NSInteger)index {
     
-    UIView *moreButton = [_scrollView viewWithTag:BUTTONTAG + index];
+    UIView *moreButton = [_scrollView viewWithTag:kPBMoreViewBtnTag + index];
     if (moreButton && [moreButton isKindOfClass:[UIButton class]]) {
         [self resetItemWithIndex:index];
         [moreButton removeFromSuperview];
@@ -287,42 +289,49 @@
 
 //相册选取图片
 - (void)photoButtonAction {
+    [self.superview endEditing:YES];
     if (_delegate && [_delegate respondsToSelector:@selector(moreViewPhotoAction:)]) {
         [_delegate moreViewPhotoAction:self];
     }
 }
 //拍照
 - (void)takePicButtonAction {
+    [self.superview endEditing:YES];
     if(_delegate && [_delegate respondsToSelector:@selector(moreViewTakePicAction:)]){
         [_delegate moreViewTakePicAction:self];
     }
 }
 //定位
 - (void)locationButtonAction {
+    [self.superview endEditing:YES];
     if (_delegate && [_delegate respondsToSelector:@selector(moreViewLocationAction:)]) {
         [_delegate moreViewLocationAction:self];
     }
 }
 //语音通话
 - (void)takeAudioCallAction {
+    [self.superview endEditing:YES];
     if (_delegate && [_delegate respondsToSelector:@selector(moreViewAudioCallAction:)]) {
         [_delegate moreViewAudioCallAction:self];
     }
 }
 //视频通话
 - (void)takeVideoCallAction {
+    [self.superview endEditing:YES];
     if (_delegate && [_delegate respondsToSelector:@selector(moreViewVideoCallAction:)]) {
         [_delegate moreViewVideoCallAction:self];
     }
 }
 //名片功能
 - (void)cardButtonAction {
+    [self.superview endEditing:YES];
     if (_delegate && [_delegate respondsToSelector:@selector(moreViewCardButtonAction:)]) {
         [_delegate moreViewCardButtonAction:self];
     }
 }
 //打赏
 - (void)rewardButtonAction {
+    [self.superview endEditing:YES];
     if (_delegate && [_delegate respondsToSelector:@selector(moreViewRewardButtonAction:)]) {
         [_delegate moreViewRewardButtonAction:self];
     }
@@ -330,8 +339,9 @@
 //自定义按钮点击事件
 - (void)moreAction:(UIButton *)sender {
     UIButton *button = (UIButton*)sender;
+    [self.superview endEditing:YES];
     if (button && _delegate && [_delegate respondsToSelector:@selector(moreView:didItemInMoreViewWithIndex:)]) {
-        [_delegate moreView:self didItemInMoreViewWithIndex:button.tag - BUTTONTAG];
+        [_delegate moreView:self didItemInMoreViewWithIndex:button.tag - kPBMoreViewBtnTag];
     }
 }
 
@@ -340,25 +350,25 @@
 //移除按钮具体方法
 - (void)resetItemWithIndex:(NSInteger)index {
     
-    CGFloat inset = (self.frame.size.width - MOREVIEW_COL * BUTTONWIDTH) / 5;
+    CGFloat inset = (self.frame.size.width - kPBMoreViewColum * kMoreViewButtonWidth) / 5;
     CGRect frame = self.frame;
     
     for (NSInteger i = index + 1; i < _maxIndex + 1; i++) {
         
-        UIView *moreButton = [_scrollView viewWithTag:BUTTONTAG + i];
+        UIView *moreButton = [_scrollView viewWithTag:kPBMoreViewBtnTag + i];
         if (moreButton && [moreButton isKindOfClass:[UIButton class]]) {
             NSInteger moveToIndex = i - 1;
-            NSInteger pageSize = MOREVIEW_COL * MOREVIEW_ROW;
+            NSInteger pageSize = kPBMoreViewColum * kPBMoreViewRow;
             NSInteger page = moveToIndex / pageSize;
-            NSInteger row = (moveToIndex % pageSize) / MOREVIEW_COL;
-            NSInteger col = moveToIndex % MOREVIEW_COL;
+            NSInteger row = (moveToIndex % pageSize) / kPBMoreViewColum;
+            NSInteger col = moveToIndex % kPBMoreViewColum;
             
-            [moreButton setFrame:CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + BUTTONWIDTH * col,
-                                            BUTTONWIDTH * row + MOREVIEWBOTTOMPADDING * (row - 1) + MOREVIEWTOPPADDING,
-                                            BUTTONWIDTH ,
-                                            BUTTONWIDTH)];
+            [moreButton setFrame:CGRectMake(page * CGRectGetWidth(self.frame) + inset * (col + 1) + kMoreViewButtonWidth * col,
+                                            kMoreViewButtonWidth * row + kMoreViewBottomPadding * (row - 1) + kMoreViewTopPadding,
+                                            kMoreViewButtonWidth ,
+                                            kMoreViewButtonWidth)];
             
-            moreButton.tag = BUTTONTAG + moveToIndex;
+            moreButton.tag = kPBMoreViewBtnTag + moveToIndex;
             [_scrollView setContentSize:CGSizeMake(CGRectGetWidth(self.frame) * (page + 1),
                                                    CGRectGetHeight(self.frame))];
             [_pageControl setNumberOfPages:page + 1];
@@ -366,16 +376,16 @@
     }
     
     _maxIndex--;
-    frame.size.height = BUTTONWIDTH * MOREVIEW_ROW + MOREVIEWBOTTOMPADDING * MOREVIEW_ROW + MOREVIEWTOPPADDING;
+    frame.size.height = kMoreViewButtonWidth * kPBMoreViewRow + kMoreViewBottomPadding * kPBMoreViewRow + kMoreViewTopPadding;
     self.frame = frame;
     _scrollView.frame = CGRectMake(0,
                                    0,
                                    CGRectGetWidth(frame),
                                    CGRectGetHeight(frame));
     _pageControl.frame = CGRectMake(0,
-                                    CGRectGetHeight(frame) - 20 * ONEHEIGHT,
+                                    CGRectGetHeight(frame) - 20 * ([UIScreen mainScreen].bounds.size.height / 667),
                                     CGRectGetWidth(frame),
-                                    20 * ONEHEIGHT);
+                                    20 * ([UIScreen mainScreen].bounds.size.height / 667));
     _pageControl.hidden = _pageControl.numberOfPages <= 1;
 }
 

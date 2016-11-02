@@ -7,11 +7,7 @@
 //
 
 #import "PBChatViewController.h"
-#import "PBEnterBar.h"
-#import "PBFaceView.h"
-#import "PBMoreView.h"
-#import "PBRecordView.h"
-#import "PBEmojiManager.h"
+#import "PBEnterBarHeader.h"
 
 
 @interface PBChatViewController ()<PBEnterBarDelegate, PBMoreViewDelegate, PBRecordViewDelegate, UITableViewDataSource, UITableViewDelegate>
@@ -47,21 +43,14 @@
     self.dataSourceArray = [NSMutableArray array];
     
     CGFloat enterBarHeight = [PBEnterBar defaultHeight];
-//    PBEnterBarType barType = _conversation.conversationType == ConversationTypeChat ? PBEnterbarTypeChat : PBEnterbarTypeGroup;
     self.enterBar = [[PBEnterBar alloc] initWithFrame:CGRectMake(0,
                                                              self.view.frame.size.height - enterBarHeight,
                                                              self.view.frame.size.width,
                                                              enterBarHeight)
-                                             type:PBEnterbarTypeChat];
+                                             type:PBEnterBarTypeChat];
     [_enterBar setDelegate:self];
-    //创建更多页面的扩展页
-    self.moreView = (PBMoreView *)[_enterBar moreView];
-    _moreView.delegate = self;
-    //创建表情页面的扩展页
-    self.faceView = (PBFaceView *)[_enterBar faceView];
-    //创建录音界面的扩展页
-    self.recordView = (PBRecordView *)[_enterBar recordView];
-    _recordView.delegate = self;
+    _enterBar.recordView.delegate = self;
+    _enterBar.moreView.delegate = self;
     //调整tabbar与顶部的距离, 也就是保证与superView的底部距离不变
     _enterBar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     
@@ -118,25 +107,14 @@
 
 - (void)didStartRecordingVoiceAction:(UIView *)recordView {
     
-    if ([self canRecord]) {
-        //如果设备允许访问麦克风
-        PBRecordView *tempView = (PBRecordView *)recordView;
-        //将提示的框放在屏幕中心
-        tempView.center = self.view.center;
-        [self.view addSubview:tempView];
-        //放在所有视图最前端
-        [self.view bringSubviewToFront:recordView];
-    }
 }
 
 - (void)didCancelRecordingVoiceAction:(UIView *)recordView {
     
-    [_recordView removeFromSuperview];
 }
 
 - (void)didFinishRecoingVoiceAction:(UIView *)recordView {
     
-    [_recordView removeFromSuperview];
 }
 
 - (void)didDragOutsideAction:(UIView *)recordView {
@@ -174,8 +152,7 @@
 #pragma mark - MoreViewDelegate
 
 - (void)moreViewPhotoAction:(PBMoreView *)moreView {
-    // 隐藏键盘
-    [self.enterBar endEditing:YES];
+    
     /*
     // 弹出照片选择
     self.imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;

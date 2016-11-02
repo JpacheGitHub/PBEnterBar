@@ -11,11 +11,10 @@
 @implementation PBEnterBarItem
 
 - (instancetype)initWithButton:(UIButton *)button
-                      withView:(UIView *)button2View {
-    self = [super init];
-    if (self) {
-        self.button = button;
-        self.button2View = button2View;
+                    extendView:(UIView *)extendView {
+    if (self = [super init]) {
+        _button = button;
+        _extendView = extendView;
     }
     return self;
 }

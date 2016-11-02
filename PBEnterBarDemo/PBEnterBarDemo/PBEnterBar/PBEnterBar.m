@@ -8,9 +8,12 @@
 
 #import "PBEnterBar.h"
 #import "PBFaceView.h"
+#import "PBMoreView.h"
 #import "PBRecordView.h"
 #import "PBEnterBarItem.h"
 #import "PBEmojiManager.h"
+#import "PBEnterBarTextView.h"
+#import "PBEnterBarHelper.h"
 
 @interface PBEnterBar ()<UITextViewDelegate, PBFaceViewDelegate>
 
@@ -39,8 +42,10 @@
  *  输入框
  */
 @property (nonatomic, assign) CGFloat previousTextViewContentHeight;//上一次inputTextView的contentSize.height
-@property (nonatomic, strong) NSLayoutConstraint *inputViewWidthItemsLeftConstraint;
-@property (nonatomic, strong) NSLayoutConstraint *inputViewWidthoutItemsLeftConstraint;
+
+@property (nonatomic, assign) CGRect initialFrame;
+@property (nonatomic, assign) BOOL fristSetFrame;
+
 @end
 
 
@@ -56,8 +61,59 @@
 
 #pragma mark - init
 
+- (instancetype)init {
+    self = [self initWithHorizontalPadding:5 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:90 type:PBEnterBarTypeChat];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (instancetype)initWithType:(PBEnterBarType)type {
+    self = [self initWithHorizontalPadding:5 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:90 type:type];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (instancetype)initWithHorizontalPadding:(CGFloat)horizontalPadding
+                          verticalPadding:(CGFloat)verticalPadding
+                       inputViewMinHeight:(CGFloat)inputViewMinHeight
+                       inputViewMaxHeight:(CGFloat)inputViewMaxHeight
+                                     type:(PBEnterBarType)type {
+    if (self = [super init]) {
+        
+        _horizontalPadding = horizontalPadding;
+        _verticalPadding = verticalPadding;
+        _inputViewMinHeight = inputViewMinHeight;
+        _inputViewMaxHeight = inputViewMaxHeight;
+        _enterBarType = type;
+        
+        _leftItems = [NSMutableArray array];
+        _rightItems = [NSMutableArray array];
+        _version = [[[UIDevice currentDevice] systemVersion] floatValue];
+        _activityButtomView = nil;
+        _showButtomView = NO;
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(enterKeyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
+        
+        _recordImageName = @"ToolViewInputVoice";
+        _recordHLImageName = @"ToolViewInputVoiceHL";
+        _faceImageName = @"ToolViewEmotion";
+        _faceHLImageName = @"ToolViewEmotionHL";
+        _moreImageName = @"TypeSelectorBtn_Black";
+        _moreHLImageName = @"TypeSelectorBtnHL_Black";
+        _defaultImageName = @"ToolViewKeyboard";
+        _defaultHLImageName = @"ToolViewKeyboardHL";
+        
+        [self createSubView];
+    }
+    return self;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame {
-    self = [self initWithFrame:frame horizontalPadding:5 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:90 type:PBEnterbarTypeGroup];
+    self = [self initWithFrame:frame horizontalPadding:5 verticalPadding:5 inputViewMinHeight:36 inputViewMaxHeight:90 type:PBEnterBarTypeChat];
     if (self) {
         
     }
@@ -94,13 +150,12 @@
         _inputViewMaxHeight = inputViewMaxHeight;
         _enterBarType = type;
         
-        self.leftItems = [NSMutableArray array];
-        self.rightItems = [NSMutableArray array];
+        _leftItems = [NSMutableArray array];
+        _rightItems = [NSMutableArray array];
         _version = [[[UIDevice currentDevice] systemVersion] floatValue];
-        self.activityButtomView = nil;
+        _activityButtomView = nil;
         _showButtomView = NO;
         
-//        self.backgroundColor = [UIColor whiteColor];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(enterKeyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
         
         _recordImageName = @"ToolViewInputVoice";
@@ -117,19 +172,15 @@
     return self;
 }
 
-#pragma mark - createSubView
-
 - (void)createSubView {
     //toolbar
-    self.enterBarView = [[UIView alloc] initWithFrame:self.bounds];
+    self.enterBarView = [[UIView alloc] init];
     _enterBarView.backgroundColor = [UIColor colorWithRed:0.9672 green:0.9672 blue:0.9672 alpha:1.0];
     [self addSubview:_enterBarView];
     
+    
     //inputTextView
-    self.inputTextView = [[PBEnterBarTextView alloc] initWithFrame:CGRectMake(_horizontalPadding,
-                                                                           _verticalPadding,
-                                                                           self.frame.size.width - _horizontalPadding * 2,
-                                                                           self.frame.size.height - _verticalPadding * 2)];
+    self.inputTextView = [[PBEnterBarTextView alloc] init];
     
     _inputTextView.delegate = self;
     _inputTextView.layer.borderColor = [UIColor colorWithWhite:0.8f alpha:1.0f].CGColor;
@@ -141,27 +192,28 @@
     [self willShowInputTextViewToHeight:_previousTextViewContentHeight];
     [_enterBarView addSubview:_inputTextView];
     
+    
     switch (_enterBarType) {
-        case PBEnterbarTypeChat: {
-            [self createRecordFunction];
-            PBEnterBarItem *faceItem = [self createFaceFunction];
-            PBEnterBarItem *moreItem = [self createMoreFunction];
+        case PBEnterBarTypeChat: {
+            
+            [self createRecordItem];
+            PBEnterBarItem *faceItem = [self createFaceItem];
+            PBEnterBarItem *moreItem = [self createMoreItem];
             [self setInputViewRightItems:@[faceItem, moreItem]];
-            [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[styleChangeButton]-padding-[inputTextView]-padding-[faceItem]-padding-[moreItem]-padding-|" options:0 metrics:@{@"padding":@(_horizontalPadding)} views:@{@"styleChangeButton":_styleChangeButton, @"inputTextView":_inputTextView, @"faceItem":faceItem.button, @"moreItem":moreItem.button}]];
         }
             break;
-        case PBEnterbarTypeGroup: {
-            [self createRecordFunction];
-            PBEnterBarItem *faceItem = [self createFaceFunction];
-            PBEnterBarItem *moreItem = [self createMoreFunction];
+        case PBEnterBarTypeGroup: {
+            
+            [self createRecordItem];
+            PBEnterBarItem *faceItem = [self createFaceItem];
+            PBEnterBarItem *moreItem = [self createMoreItem];
             [self setInputViewRightItems:@[faceItem, moreItem]];
-            [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[styleChangeButton]-padding-[inputTextView]-padding-[faceItem]-padding-[moreItem]-padding-|" options:0 metrics:@{@"padding":@(_horizontalPadding)} views:@{@"styleChangeButton":_styleChangeButton, @"inputTextView":_inputTextView, @"faceItem":faceItem.button, @"moreItem":moreItem.button}]];
         }
             break;
-        case PBEnterbarTypeComment: {
-            PBEnterBarItem *faceItem = [self createFaceFunction];
+        case PBEnterBarTypeComment: {
+            
+            PBEnterBarItem *faceItem = [self createFaceItem];
             [self setInputViewRightItems:@[faceItem]];
-            [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-padding-[inputTextView]-padding-[faceItem]-padding-|" options:0 metrics:@{@"padding":@(_horizontalPadding)} views:@{@"inputTextView":_inputTextView, @"faceItem":faceItem.button}]];
         }
             break;
         default:
@@ -169,21 +221,21 @@
     }
 }
 
-- (void)createRecordFunction {
+- (void)createRecordItem {
     //转变输入样式按钮
-    _styleChangeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.styleChangeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _styleChangeButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     [_styleChangeButton setImage:[UIImage imageNamed:_recordImageName] forState:UIControlStateNormal];
     [_styleChangeButton setImage:[UIImage imageNamed:_recordHLImageName] forState:UIControlStateHighlighted];
     [_styleChangeButton addTarget:self action:@selector(styleButtonAction:) forControlEvents:UIControlEventTouchUpInside];
     
     PBEnterBarItem *styleItem = [[PBEnterBarItem alloc] initWithButton:_styleChangeButton
-                                                              withView:nil];
+                                                            extendView:nil];
     [self setInputViewLeftItems:@[styleItem]];
+    
     
     //录制
     self.recordButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _recordButton.frame = _inputTextView.frame;
     _recordButton.titleLabel.font = [UIFont systemFontOfSize:15.0];
     [_recordButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [_recordButton setBackgroundImage:[[UIImage imageNamed:@"record_btn_back"]
@@ -207,19 +259,21 @@
     [_enterBarView addSubview:_recordButton];
 }
 
-- (PBEnterBarItem *)createFaceFunction {
+- (PBEnterBarItem *)createFaceItem {
     //表情
     self.faceButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _faceButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     [_faceButton setImage:[UIImage imageNamed:_faceImageName] forState:UIControlStateNormal];
     [_faceButton setImage:[UIImage imageNamed:_faceHLImageName] forState:UIControlStateHighlighted];
     [_faceButton addTarget:self action:@selector(faceButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
     PBEnterBarItem *faceItem = [[PBEnterBarItem alloc] initWithButton:self.faceButton
-                                                             withView:self.faceView];
+                                                           extendView:self.faceView];
     return faceItem;
 }
 
-- (PBEnterBarItem *)createMoreFunction {
+- (PBEnterBarItem *)createMoreItem {
     //更多
     self.moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _moreButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
@@ -227,81 +281,50 @@
                  forState:UIControlStateNormal];
     [_moreButton setImage:[UIImage imageNamed:_moreHLImageName] forState:UIControlStateHighlighted];
     [_moreButton addTarget:self action:@selector(moreButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
     PBEnterBarItem *moreItem = [[PBEnterBarItem alloc] initWithButton:self.moreButton
-                                                             withView:self.moreView];
+                                                           extendView:self.moreView];
     return moreItem;
 }
 
-#pragma mark - getter
+#pragma mark - layout
 
-- (UIView *)faceView {
-    if (_faceView == nil) {
-        _faceView = [[PBFaceView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_enterBarView.frame), self.frame.size.width, 180)];
-        ((PBFaceView *)_faceView).delegate = self;
-        _faceView.backgroundColor = [UIColor colorWithRed:0.9672 green:0.9672 blue:0.9672 alpha:1.0];
-        _faceView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    _enterBarView.frame = CGRectMake(0, 0, self.initialFrame.size.width, self.initialFrame.size.height);
+    
+    _inputTextView.frame = CGRectMake(_horizontalPadding,
+                                      _verticalPadding,
+                                      _enterBarView.frame.size.width - _horizontalPadding * 2,
+                                      _enterBarView.frame.size.height - _verticalPadding * 2);
+    
+    [self _setupLeftItemsLayout];
+    
+    if (_recordButton) {
+        _recordButton.frame = _inputTextView.frame;
     }
-    return _faceView;
+    
+    [self _setupRightItemsLayout];
 }
 
-- (UIView *)moreView {
-    if (_moreView == nil) {
-        _moreView = [[PBMoreView alloc] initWithFrame:CGRectMake(0,
-                                                               CGRectGetMaxY(_enterBarView.frame),
-                                                               self.frame.size.width,
-                                                               80)
-                                               type:_enterBarType];
-        _moreView.backgroundColor = [UIColor colorWithRed:0.9672 green:0.9672 blue:0.9672 alpha:1.0];
-        _moreView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+- (void)setFrame:(CGRect)frame {
+    [super setFrame:frame];
+    
+    if (!_fristSetFrame) {
+        self.initialFrame = frame;
+        _fristSetFrame = !_fristSetFrame;
     }
-    return _moreView;
+    
 }
 
-- (UIView *)recordView {
-    if (_recordView == nil) {
-        _recordView = [[PBRecordView alloc] initWithFrame:CGRectMake(90, 130, 140, 140)];
-    }
-    return _recordView;
-}
-
-#pragma mark - setter
-
-- (void)setRecordView:(UIView *)recordView {
-    _recordView = recordView;
-}
-
-- (void)setMoreView:(UIView *)moreView {
-    _moreView = moreView;
-    //每次重新给moreView赋值, 则重新将moreView赋值给对应的enterBarItem
-    for (PBEnterBarItem *item in _rightItems) {
-        if (item.button == _moreButton) {
-            item.button2View = _moreView;
-            break;
-        }
-    }
-}
-
-- (void)setFaceView:(UIView *)faceView {
-    _faceView = faceView;
-    //每次重新给faceView赋值, 则重新将faceView赋值给对应的enterBarItem
-    for (PBEnterBarItem *item in _rightItems) {
-        if (item.button == _faceButton) {
-            item.button2View = _faceView;
-            break;
-        }
-    }
-}
-
-- (void)setInputViewLeftItems:(NSArray *)inputViewLeftItems {
-    for (PBEnterBarItem *item in _leftItems) {
-        [item.button removeFromSuperview];
-        [item.button2View removeFromSuperview];
-    }
-    [self.leftItems removeAllObjects];
+- (void)_setupLeftItemsLayout {
     
     CGFloat oX = _horizontalPadding;
     CGFloat itemHeight = _enterBarView.frame.size.height - _verticalPadding * 2;
-    for (id item in inputViewLeftItems) {
+    
+    for (id item in _leftItems) {
         if ([item isKindOfClass:[PBEnterBarItem class]]) {
             PBEnterBarItem *enterItem = (PBEnterBarItem *)item;
             if (enterItem.button) {
@@ -318,9 +341,6 @@
                 itemFrame.origin.y = (_enterBarView.frame.size.height - itemFrame.size.height) / 2;
                 enterItem.button.frame = itemFrame;
                 oX += (itemFrame.size.width + _horizontalPadding);
-                
-                [_enterBarView addSubview:enterItem.button];
-                [_leftItems addObject:enterItem];
             }
         }
     }
@@ -337,21 +357,19 @@
     _recordButton.frame = recordFrame;
 }
 
-- (void)setInputViewRightItems:(NSArray *)inputViewRightItems {
-    for (PBEnterBarItem *item in _rightItems) {
-        [item.button removeFromSuperview];
-        [item.button2View removeFromSuperview];
-    }
-    [self.rightItems removeAllObjects];
+- (void)_setupRightItemsLayout {
     
     CGFloat oMaxX = _enterBarView.frame.size.width - _horizontalPadding;
     CGFloat itemHeight = _enterBarView.frame.size.height - _verticalPadding * 2;
-    if ([inputViewRightItems count] > 0) {
-        for (NSInteger i = (inputViewRightItems.count - 1); i >= 0; i--) {
-            id item = [inputViewRightItems objectAtIndex:i];
+    if (_rightItems.count > 0) {
+        for (NSInteger i = (_rightItems.count - 1); i >= 0; i--) {
+            
+            id item = _rightItems[i];
             if ([item isKindOfClass:[PBEnterBarItem class]]) {
+                
                 PBEnterBarItem *enterItem = (PBEnterBarItem *)item;
                 if (enterItem.button) {
+                    
                     CGRect itemFrame = enterItem.button.frame;
                     if (itemFrame.size.height == 0) {
                         itemFrame.size.height = itemHeight;
@@ -366,9 +384,6 @@
                     itemFrame.origin.y = (_enterBarView.frame.size.height - itemFrame.size.height) / 2;
                     enterItem.button.frame = itemFrame;
                     oMaxX -= _horizontalPadding;
-                    
-                    [_enterBarView addSubview:enterItem.button];
-                    [_rightItems addObject:item];
                 }
             }
         }
@@ -383,44 +398,6 @@
     recordFrame.origin.x = inputFrame.origin.x;
     recordFrame.size.width = inputFrame.size.width;
     _recordButton.frame = recordFrame;
-}
-
-- (void)setFaceImageName:(NSString *)faceImageName {
-    _faceImageName = faceImageName;
-    [_faceButton setImage:[UIImage imageNamed:faceImageName] forState:UIControlStateNormal];
-}
-
-- (void)setFaceHLImageName:(NSString *)faceHLImageName {
-    _faceHLImageName = faceHLImageName;
-    [_faceButton setImage:[UIImage imageNamed:faceHLImageName] forState:UIControlStateHighlighted];
-}
-
-- (void)setRecordImageName:(NSString *)recordImageName {
-    _recordImageName = recordImageName;
-    [_styleChangeButton setImage:[UIImage imageNamed:recordImageName] forState:UIControlStateNormal];
-}
-
-- (void)setRecordHLImageName:(NSString *)recordHLImageName {
-    _recordHLImageName = recordHLImageName;
-    [_styleChangeButton setImage:[UIImage imageNamed:recordHLImageName] forState:UIControlStateNormal];
-}
-
-- (void)setDefaultImageName:(NSString *)defaultImageName {
-    _defaultImageName = defaultImageName;
-}
-
-- (void)setDefaultHLImageName:(NSString *)defaultHLImageName {
-    _defaultHLImageName = defaultHLImageName;
-}
-
-- (void)setMoreImageName:(NSString *)moreImageName {
-    _moreImageName = moreImageName;
-    [_moreButton setImage:[UIImage imageNamed:moreImageName] forState:UIControlStateNormal];
-}
-
-- (void)setMoreHLImageName:(NSString *)moreHLImageName {
-    _moreHLImageName = moreHLImageName;
-    [_moreButton setImage:[UIImage imageNamed:moreHLImageName] forState:UIControlStateHighlighted];
 }
 
 #pragma mark - extend view action
@@ -502,7 +479,7 @@
         //如果处于文字输入状态，使文字输入框失去焦点
         [_inputTextView resignFirstResponder];
         
-        [self willShowBottomView:faceItem.button2View];
+        [self willShowBottomView:faceItem.extendView];
         
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _recordButton.hidden = sender.selected;
@@ -549,7 +526,7 @@
         //如果处于文字输入状态，使文字输入框失去焦点
         [_inputTextView resignFirstResponder];
         
-        [self willShowBottomView:moreItem.button2View];
+        [self willShowBottomView:moreItem.extendView];
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _recordButton.hidden = sender.selected;
             _inputTextView.hidden = !sender.selected;
@@ -565,27 +542,39 @@
 #pragma mark - record button action
 
 - (void)recordButtonTouchDown:(UIButton *)sender {
-    [(PBRecordView *)self.recordView recordButtonTouchDown];
-    if (_delegate && [_delegate respondsToSelector:@selector(didStartRecordingVoiceAction:)]) {
-        [_delegate didStartRecordingVoiceAction:self.recordView];
+    
+    if ([PBEnterBarHelper canRecord]) {
+        
+        [self.recordView recordButtonTouchDown];
+        
+        //将提示的框放在屏幕中心
+        _recordView.center = CGPointMake(self.superview.frame.size.width / 2, self.superview.frame.size.height / 2);
+        [self.superview addSubview:_recordView];
+        //放在所有视图最前端
+        [self.superview bringSubviewToFront:_recordView];
+        
+        if (_delegate && [_delegate respondsToSelector:@selector(didStartRecordingVoiceAction:)]) {
+            [_delegate didStartRecordingVoiceAction:_recordView];
+        }
     }
+    
 }
 
 - (void)recordButtonTouchUpOutside:(UIButton *)sender {
     
-    [(PBRecordView *)self.recordView recordButtonTouchUpOutside];
+    [self.recordView recordButtonTouchUpOutside];
+    [_recordView removeFromSuperview];
     
     if (_delegate && [_delegate respondsToSelector:@selector(didCancelRecordingVoiceAction:)]) {
         
         [_delegate didCancelRecordingVoiceAction:_recordView];
     }
-    [(PBRecordView *)self.recordView removeFromSuperview];
 }
 
 - (void)recordButtonTouchUpInside:(UIButton *)sender {
     
-    [(PBRecordView *)self.recordView recordButtonTouchUpInside];
-    [(PBRecordView *)self.recordView removeFromSuperview];
+    [self.recordView recordButtonTouchUpInside];
+    [_recordView removeFromSuperview];
     
     if ([_delegate respondsToSelector:@selector(didFinishRecoingVoiceAction:)]) {
         
@@ -596,7 +585,7 @@
 
 - (void)recordDragOutside:(UIButton *)sender {
     
-    [(PBRecordView *)self.recordView recordButtonDragOutside];
+    [self.recordView recordButtonDragOutside];
     if ([_delegate respondsToSelector:@selector(didDragOutsideAction:)]) {
         
         [_delegate didDragOutsideAction:_recordView];
@@ -605,7 +594,7 @@
 
 - (void)recordDragInside:(UIButton *)sender {
     
-    [(PBRecordView *)self.recordView recordButtonDragInside];
+    [self.recordView recordButtonDragInside];
     if ([_delegate respondsToSelector:@selector(didDragInsideAction:)]) {
         
         [_delegate didDragInsideAction:_recordView];
@@ -750,6 +739,32 @@
     }
 }
 
+#pragma mark - UIKeyboardNotification
+
+//输入框上移
+- (void)enterKeyboardWillChangeFrame:(NSNotification *)notification {
+    
+    NSDictionary *userInfo = notification.userInfo;
+    //弹出键盘动画结束后, 键盘的位置
+    CGRect endFrame = [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    //弹出键盘动画前, 键盘的位置
+    CGRect beginFrame = [userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+    //键盘弹出的动画时间, 使动画更连贯
+    CGFloat duration = [userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    //获取键盘弹出的动画类型
+    UIViewAnimationCurve curve = [userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
+    
+    void(^animations)() = ^{
+        [self willShowKeyboardFromFrame:beginFrame toFrame:endFrame];
+    };
+    //网上说要左移16位, 为什么呢?---左移是因为键盘弹出的动画和这个动画的枚举类型不同, 左移后效果才一样
+    [UIView animateWithDuration:duration
+                          delay:0.0f
+                        options:(curve << 16 | UIViewAnimationOptionBeginFromCurrentState)
+                     animations:animations
+                     completion:nil];
+}
+
 #pragma mark - private input view
 
 //返回文本框内容的高度
@@ -806,32 +821,6 @@
             [_delegate enterBarDidChangeFrameToHeight:self.frame.size.height];
         }
     }
-}
-
-#pragma mark - UIKeyboardNotification
-
-//输入框上移
-- (void)enterKeyboardWillChangeFrame:(NSNotification *)notification {
-    
-    NSDictionary *userInfo = notification.userInfo;
-    //弹出键盘动画结束后, 键盘的位置
-    CGRect endFrame = [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    //弹出键盘动画前, 键盘的位置
-    CGRect beginFrame = [userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
-    //键盘弹出的动画时间, 使动画更连贯
-    CGFloat duration = [userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-    //获取键盘弹出的动画类型
-    UIViewAnimationCurve curve = [userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
-    
-    void(^animations)() = ^{
-        [self willShowKeyboardFromFrame:beginFrame toFrame:endFrame];
-    };
-    //网上说要左移16位, 为什么呢?---左移是因为键盘弹出的动画和这个动画的枚举类型不同, 左移后效果才一样
-    [UIView animateWithDuration:duration
-                          delay:0.0f
-                        options:(curve << 16 | UIViewAnimationOptionBeginFromCurrentState)
-                     animations:animations
-                     completion:nil];
 }
 
 #pragma mark - private bottom view
@@ -965,6 +954,149 @@
         [_recordView removeFromSuperview];
     }
 }
+
+#pragma mark - getter
+
+- (PBFaceView *)faceView {
+    if (_faceView == nil) {
+        _faceView = [[PBFaceView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_enterBarView.frame), self.frame.size.width, 180)];
+        ((PBFaceView *)_faceView).delegate = self;
+        _faceView.backgroundColor = [UIColor colorWithRed:0.9672 green:0.9672 blue:0.9672 alpha:1.0];
+        _faceView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+    }
+    return _faceView;
+}
+
+- (PBMoreView *)moreView {
+    if (_moreView == nil) {
+        _moreView = [[PBMoreView alloc] initWithFrame:CGRectMake(0,
+                                                                 CGRectGetMaxY(_enterBarView.frame),
+                                                                 self.frame.size.width,
+                                                                 80)
+                                                 type:_enterBarType];
+        _moreView.backgroundColor = [UIColor colorWithRed:0.9672 green:0.9672 blue:0.9672 alpha:1.0];
+        _moreView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+    }
+    return _moreView;
+}
+
+- (PBRecordView *)recordView {
+    if (_recordView == nil) {
+        _recordView = [[PBRecordView alloc] initWithFrame:CGRectMake(90, 130, 140, 140)];
+    }
+    return _recordView;
+}
+
+#pragma mark - setter
+
+- (void)setRecordView:(PBRecordView *)recordView {
+    _recordView = recordView;
+}
+
+- (void)setMoreView:(PBMoreView *)moreView {
+    _moreView = moreView;
+    //每次重新给moreView赋值, 则重新将moreView赋值给对应的enterBarItem
+    for (PBEnterBarItem *item in _rightItems) {
+        if (item.button == _moreButton) {
+            item.extendView = _moreView;
+            break;
+        }
+    }
+}
+
+- (void)setFaceView:(PBFaceView *)faceView {
+    _faceView = faceView;
+    //每次重新给faceView赋值, 则重新将faceView赋值给对应的enterBarItem
+    for (PBEnterBarItem *item in _rightItems) {
+        if (item.button == _faceButton) {
+            item.extendView = _faceView;
+            break;
+        }
+    }
+}
+
+- (void)setInputViewLeftItems:(NSArray *)inputViewLeftItems {
+    for (PBEnterBarItem *item in _leftItems) {
+        [item.button removeFromSuperview];
+        [item.extendView removeFromSuperview];
+    }
+    [self.leftItems removeAllObjects];
+    
+    for (id item in inputViewLeftItems) {
+        if ([item isKindOfClass:[PBEnterBarItem class]]) {
+            
+            PBEnterBarItem *enterItem = (PBEnterBarItem *)item;
+            
+            if (enterItem.button) {
+                [_enterBarView addSubview:enterItem.button];
+                [_leftItems addObject:enterItem];
+            }
+        }
+    }
+}
+
+- (void)setInputViewRightItems:(NSArray *)inputViewRightItems {
+    for (PBEnterBarItem *item in _rightItems) {
+        [item.button removeFromSuperview];
+        [item.extendView removeFromSuperview];
+    }
+    [self.rightItems removeAllObjects];
+    
+    
+    if (inputViewRightItems.count > 0) {
+        for (NSInteger i = inputViewRightItems.count - 1; i >= 0; i--) {
+            id item = inputViewRightItems[i];
+            if ([item isKindOfClass:[PBEnterBarItem class]]) {
+                
+                PBEnterBarItem *enterItem = (PBEnterBarItem *)item;
+                if (enterItem.button) {
+                    
+                    [_enterBarView addSubview:enterItem.button];
+                    [_rightItems addObject:item];
+                }
+            }
+        }
+    }
+}
+
+- (void)setFaceImageName:(NSString *)faceImageName {
+    _faceImageName = faceImageName;
+    [_faceButton setImage:[UIImage imageNamed:faceImageName] forState:UIControlStateNormal];
+}
+
+- (void)setFaceHLImageName:(NSString *)faceHLImageName {
+    _faceHLImageName = faceHLImageName;
+    [_faceButton setImage:[UIImage imageNamed:faceHLImageName] forState:UIControlStateHighlighted];
+}
+
+- (void)setRecordImageName:(NSString *)recordImageName {
+    _recordImageName = recordImageName;
+    [_styleChangeButton setImage:[UIImage imageNamed:recordImageName] forState:UIControlStateNormal];
+}
+
+- (void)setRecordHLImageName:(NSString *)recordHLImageName {
+    _recordHLImageName = recordHLImageName;
+    [_styleChangeButton setImage:[UIImage imageNamed:recordHLImageName] forState:UIControlStateNormal];
+}
+
+- (void)setDefaultImageName:(NSString *)defaultImageName {
+    _defaultImageName = defaultImageName;
+}
+
+- (void)setDefaultHLImageName:(NSString *)defaultHLImageName {
+    _defaultHLImageName = defaultHLImageName;
+}
+
+- (void)setMoreImageName:(NSString *)moreImageName {
+    _moreImageName = moreImageName;
+    [_moreButton setImage:[UIImage imageNamed:moreImageName] forState:UIControlStateNormal];
+}
+
+- (void)setMoreHLImageName:(NSString *)moreHLImageName {
+    _moreHLImageName = moreHLImageName;
+    [_moreButton setImage:[UIImage imageNamed:moreHLImageName] forState:UIControlStateHighlighted];
+}
+
 
 /*
 // Only override drawRect: if you perform custom drawing.
